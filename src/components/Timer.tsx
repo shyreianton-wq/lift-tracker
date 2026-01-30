@@ -1,7 +1,8 @@
 import { motion } from 'framer-motion';
-import { Play, Pause, RotateCcw, Settings } from 'lucide-react';
+import { Play, Pause, RotateCcw, Minus, Plus } from 'lucide-react';
 import { useTimer } from '@/hooks/useTimer';
 import { Button } from '@/components/ui/button';
+import { Slider } from '@/components/ui/slider';
 import { useState } from 'react';
 
 interface TimerProps {
@@ -9,7 +10,9 @@ interface TimerProps {
   className?: string;
 }
 
-const PRESET_DURATIONS = [30, 60, 90, 120, 180, 300];
+const MIN_DURATION = 5;
+const MAX_DURATION = 300;
+const STEP = 5;
 
 export function Timer({ onComplete, className = '' }: TimerProps) {
   const { seconds, isRunning, duration, start, pause, reset, setDuration, formattedTime } = useTimer({
@@ -19,6 +22,11 @@ export function Timer({ onComplete, className = '' }: TimerProps) {
   const [showSettings, setShowSettings] = useState(false);
 
   const progress = (seconds / duration) * 100;
+
+  const adjustDuration = (delta: number) => {
+    const newDuration = Math.max(MIN_DURATION, Math.min(MAX_DURATION, duration + delta));
+    setDuration(newDuration);
+  };
 
   return (
     <div className={`flex flex-col items-center gap-4 ${className}`}>
@@ -83,30 +91,76 @@ export function Timer({ onComplete, className = '' }: TimerProps) {
           variant="ghost"
           size="icon"
           onClick={() => setShowSettings(!showSettings)}
-          className="h-10 w-10"
+          className={`h-10 w-10 ${showSettings ? 'bg-secondary' : ''}`}
         >
-          <Settings className="h-4 w-4" />
+          <span className="text-xs font-medium">{Math.floor(duration / 60)}:{(duration % 60).toString().padStart(2, '0')}</span>
         </Button>
       </div>
 
-      {/* Duration presets */}
+      {/* Duration adjustment - granular control */}
       {showSettings && (
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex flex-wrap gap-2 justify-center"
+          className="w-full max-w-xs space-y-4"
         >
-          {PRESET_DURATIONS.map((d) => (
+          {/* Quick adjust buttons */}
+          <div className="flex items-center justify-center gap-3">
             <Button
-              key={d}
-              variant={duration === d ? 'default' : 'secondary'}
-              size="sm"
-              onClick={() => setDuration(d)}
-              className={duration === d ? 'btn-primary-gradient' : ''}
+              variant="outline"
+              size="icon"
+              onClick={() => adjustDuration(-STEP)}
+              disabled={duration <= MIN_DURATION}
+              className="h-9 w-9"
             >
-              {d >= 60 ? `${d / 60}min` : `${d}s`}
+              <Minus className="h-4 w-4" />
             </Button>
-          ))}
+            
+            <span className="text-lg font-bold tabular-nums min-w-[80px] text-center">
+              {Math.floor(duration / 60)}:{(duration % 60).toString().padStart(2, '0')}
+            </span>
+            
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => adjustDuration(STEP)}
+              disabled={duration >= MAX_DURATION}
+              className="h-9 w-9"
+            >
+              <Plus className="h-4 w-4" />
+            </Button>
+          </div>
+
+          {/* Slider for fine control */}
+          <div className="px-2">
+            <Slider
+              value={[duration]}
+              min={MIN_DURATION}
+              max={MAX_DURATION}
+              step={STEP}
+              onValueChange={([value]) => setDuration(value)}
+              className="w-full"
+            />
+            <div className="flex justify-between text-xs text-muted-foreground mt-1">
+              <span>5s</span>
+              <span>5min</span>
+            </div>
+          </div>
+
+          {/* Preset buttons */}
+          <div className="flex flex-wrap gap-2 justify-center">
+            {[30, 60, 90, 120, 180].map((d) => (
+              <Button
+                key={d}
+                variant={duration === d ? 'default' : 'secondary'}
+                size="sm"
+                onClick={() => setDuration(d)}
+                className={duration === d ? 'btn-primary-gradient' : ''}
+              >
+                {d >= 60 ? `${d / 60}min` : `${d}s`}
+              </Button>
+            ))}
+          </div>
         </motion.div>
       )}
     </div>
