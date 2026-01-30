@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import { useWorkout } from '@/contexts/WorkoutContext';
 import { ProgramCard } from '@/components/ProgramCard';
 import { Button } from '@/components/ui/button';
-import { Plus, Dumbbell, TrendingUp, Zap } from 'lucide-react';
+import { Plus, Dumbbell, TrendingUp, Zap, History } from 'lucide-react';
 import { useState } from 'react';
 import { CreateProgramModal } from '@/components/CreateProgramModal';
 import { Program } from '@/types/workout';
@@ -43,16 +43,25 @@ export default function Dashboard() {
                 <p className="text-xs text-muted-foreground">Suivi musculation</p>
               </div>
             </div>
-            <Button
-              onClick={() => {
-                setEditingProgram(undefined);
-                setShowCreateModal(true);
-              }}
-              className="btn-primary-gradient glow-primary"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Nouveau programme
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => navigate('/history')}
+              >
+                <History className="h-4 w-4" />
+              </Button>
+              <Button
+                onClick={() => {
+                  setEditingProgram(undefined);
+                  setShowCreateModal(true);
+                }}
+                className="btn-primary-gradient glow-primary"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Nouveau programme
+              </Button>
+            </div>
           </div>
         </div>
       </header>
