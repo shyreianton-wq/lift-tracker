@@ -6,12 +6,14 @@ import { ArrowLeft, Edit, Plus, Play } from 'lucide-react';
 import { SessionCard } from '@/components/SessionCard';
 import { useState } from 'react';
 import { CreateProgramModal } from '@/components/CreateProgramModal';
+import { RotationGroupsPanel } from '@/components/RotationGroupsPanel';
 
 export default function ProgramDetail() {
   const { programId } = useParams();
   const navigate = useNavigate();
-  const { programs, updateProgram, startWorkout } = useWorkout();
+  const { programs, updateProgram, startWorkout, activeWorkout } = useWorkout();
   const [showEditModal, setShowEditModal] = useState(false);
+  const [editSessionId, setEditSessionId] = useState<string | undefined>();
 
   const program = programs.find(p => p.id === programId);
 
@@ -32,6 +34,11 @@ export default function ProgramDetail() {
     startWorkout(program.id, sessionId);
     navigate(`/training/${program.id}/${sessionId}`);
   };
+
+  // Get active rotations from current workout if it's for this program
+  const currentRotations = activeWorkout?.programId === program.id
+    ? activeWorkout.activeRotations
+    : undefined;
 
   return (
     <div className="min-h-screen bg-background">
@@ -97,19 +104,26 @@ export default function ProgramDetail() {
                 session={session}
                 index={index}
                 onStart={() => handleStartSession(session.id)}
-                onEdit={() => setShowEditModal(true)}
+                onEdit={() => { setEditSessionId(session.id); setShowEditModal(true); }}
               />
             ))}
           </div>
         )}
+
+        {/* Rotation Groups Panel */}
+        <RotationGroupsPanel
+          program={program}
+          activeRotations={currentRotations}
+        />
       </main>
 
       {/* Edit Modal */}
       <CreateProgramModal
         isOpen={showEditModal}
-        onClose={() => setShowEditModal(false)}
+        onClose={() => { setShowEditModal(false); setEditSessionId(undefined); }}
         onSave={updateProgram}
         editProgram={program}
+        initialSessionId={editSessionId}
       />
     </div>
   );

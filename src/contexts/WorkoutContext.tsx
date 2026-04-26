@@ -1,6 +1,6 @@
 import React, { createContext, useContext, ReactNode } from 'react';
 import { useWorkoutData } from '@/hooks/useWorkoutData';
-import { Program, WorkoutHistory, ActiveWorkout, WorkoutSet } from '@/types/workout';
+import { Program, WorkoutHistory, ActiveWorkout, WorkoutSet, Exercise, SetType } from '@/types/workout';
 
 interface WorkoutContextType {
   programs: Program[];
@@ -11,9 +11,12 @@ interface WorkoutContextType {
   updateProgram: (program: Program) => void;
   deleteProgram: (programId: string) => void;
   startWorkout: (programId: string, sessionId: string) => void;
-  completeSet: (exerciseId: string, setId: string, completedSet: WorkoutSet) => void;
+  updateActiveWorkout: (updates: Partial<ActiveWorkout>) => void;
+  completeSet: (exerciseId: string, setId: string, completedSet: WorkoutSet, exerciseName?: string, setIndex?: number) => void;
   endWorkout: () => void;
-  getLastPerformance: (programId: string, sessionId: string, exerciseId: string, setId: string) => WorkoutHistory | undefined;
+  getLastPerformance: (programId: string, sessionId: string, exerciseId: string, setId: string, setType?: SetType, exerciseName?: string, setIndex?: number) => WorkoutHistory | undefined;
+  isExerciseActive: (exercise: Exercise) => boolean;
+  resolveExercises: (exercises: Exercise[]) => Exercise[];
 }
 
 const WorkoutContext = createContext<WorkoutContextType | null>(null);

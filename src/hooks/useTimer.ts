@@ -8,52 +8,131 @@ interface UseTimerOptions {
 export function useTimer({ initialSeconds = 90, onComplete }: UseTimerOptions = {}) {
   const [seconds, setSeconds] = useState(initialSeconds);
   const [isRunning, setIsRunning] = useState(false);
-  const [duration, setDuration] = useState(initialSeconds);
+  const [duration, setDurationState] = useState(initialSeconds);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const startedAtRef = useRef<number | null>(null);
+  const pausedRemainingRef = useRef<number>(initialSeconds);
+  const onCompleteRef = useRef(onComplete);
+  const audioCtxRef = useRef<AudioContext | null>(null);
+
+  onCompleteRef.current = onComplete;
+
+  // Keep a warm AudioContext (avoids autoplay policy issues)
+  const getAudioCtx = useCallback(() => {
+    if (!audioCtxRef.current || audioCtxRef.current.state === 'closed') {
+      audioCtxRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+    }
+    return audioCtxRef.current;
+  }, []);
+
+  // Warm up AudioContext on first user interaction (start/pause/reset)
+  const warmAudio = useCallback(() => {
+    const ctx = getAudioCtx();
+    if (ctx.state === 'suspended') {
+      ctx.resume();
+    }
+  }, [getAudioCtx]);
+
+  // Play loud beep via Web Audio API
+  const playBeep = useCallback(() => {
+    try {
+      const ctx = getAudioCtx();
+      if (ctx.state === 'suspended') {
+        ctx.resume();
+      }
+      
+      const playTone = (time: number, freq: number, dur: number) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.frequency.value = freq;
+        osc.type = 'square';
+        gain.gain.setValueAtTime(1.0, time);
+        gain.gain.exponentialRampToValueAtTime(0.01, time + dur);
+        osc.start(time);
+        osc.stop(time + dur);
+      };
+      const now = ctx.currentTime;
+      // 5 beeps pattern: 3 fast + pause + 2 high
+      playTone(now, 880, 0.15);
+      playTone(now + 0.18, 880, 0.15);
+      playTone(now + 0.36, 880, 0.15);
+      playTone(now + 0.7, 1200, 0.25);
+      playTone(now + 1.0, 1200, 0.35);
+
+      // Also try vibration
+      if (navigator.vibrate) {
+        navigator.vibrate([200, 100, 200, 100, 400]);
+      }
+    } catch (e) {
+      console.warn('Beep failed:', e);
+    }
+  }, [getAudioCtx]);
 
   useEffect(() => {
-    // Create audio context for timer sound
-    audioRef.current = new Audio();
-    audioRef.current.src = 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2teleHR7dZekrbOxr6eekY6KiImKi42QlJqeo6qxtr2+vby6tbCsqKSkpKWnqa2xt7u+wMLDw8LAvru4tLCsqKWjo6OkpqmttLm+wcPExMTDwb67uLSwr6ynpKKio6WnqrG4vMDDxcXFxMK/vLm1sq+sqaalpaanqq62u7/CxMXGxcTCv7y5tbKvrqyqqamqqq2zub3BxMbHx8bEwr+8uLWyr66sq6qqqquut7q+wsTGx8fGxcO/vLm2s7Cvrayrq6usrrW5vcHEx8jIx8bEwL27uLWzsK6trKusrK60uL3Bw8bIycjHxcK/vLm2s7GvrqysrKyutLi9wcTGyMnJyMbDwLy5trOxr66trKysrrS4vMDDxsjKycnHxMC9uri1s7CuraysrK60uLzAwsXHycnJyMbDv7y5trSxr66trK2usLe7v8LFx8nKycjGw7+8ubazsa+uraysrrC4u7/Cxs7IycnIxsO/vLm2s7GvrqysrK6xt7u/wsbHycnJx8bDv7y5trSxr66trK2usLe7v8LFx8nKycjGw7+8ubazsa+uraysrrC3u7/CxsjKycnIxsO/vLm2tLGvrqysra6wt7u/wsbIycnJx8bDv7y5trOxr66srK2usr7CxsjJycnJyMbDv7y5trSxr66srK2usr7CxsjJycnJyMbDv7y5trSxr66srK2usr7CxsjJycnJyMbDv7y5trSxr66srK2usr7CxsjJycnIyMXCv7y5trSxr62srK2usr7CxsjJycnIyMXCv7y5trSxr62srK2usr7CxsjJycnIx8XCv7y4trOwr62srK2usr7Cw8bIycnIx8XCv7y4tbOwr62srK2usr7CxsjJycnIx8XCv7y4tbOwrq2rq6ystr7CxsjJycnIx8XCv7y4tbOwrq2rq6ystr/Cw8bHyMjHxsXCv7y4tbOwrq2rq6ystr/Cw8bHyMjHxcPAvrq3tLKvrqyrq6ust77CxcbHx8fGxMLAvru4tbKvrqyrq6ust77BxMbHx8fGxMLAvru3tLKvrqyrq6ust77BxMbHx8fGxMLAvru3tLKvrqyrq6usub/CxMbHx8fGxMG/vLm2s7CuraysrK24vsPFxsfHx8bEwL27uLWysK6srKysrrm/w8XGx8fGxcPAvrq3tLGvrqysrK25v8PFxsfHxsXDwL66t7Sxrq2srKytuL/DxcbHx8bFw8C9ure0sa6trKysrrm/w8XGx8fGxcPAvbq3tLGurayrrK24vsLFxsfHxsXDwL26t7Sxrq2srKytuL/CxcbHx8bFw8C9ure0sa6trKysrbi/wsXGx8fGxcPAvbq3tLGuraysrK24vsLFxsfHxsXDwL26t7Sxrq2srKytuL/CxcbHx8bFw8C9ure0sa6trKysrbi+wsXGx8fGxcPAvbq3tLGuraysrK24vsLFxsbGxcXDwL26t7Sxrq2srKytuL7CxcbGxsbFw8C9ure0sa6trKysrbi+wsXGxsbFxMPAvbq3tLGuraysrK24vsLExcbGxcXEwb26t7Sxrq2srKytuL7CxcbGxsXEwb26t7Sxrq2srKytuL7Bw8XGxsXEwb26t7Sxrq2srKysub7Bw8XGxcXEwb26t7Sxrq2srKysu7/Bw8TFxcTDwL26t7Sxrq2srKysu77Aw8TExMTDwL26t7Sxrq6srKysu77Aw8TExMTDwL26t7Sxrq6srKysu77Aw8TExMTCwL26trSxrq6srKysu77Aw8TExMTCwL26trSxrq6srKysu77/wMPDw8PCwL26trSxrq6srKysvL7/wMPDw8PCwL26trSxrq6srKysvL7/wMPDw8PCwL26trSxrq6srKysvL7/wMPDw8PCwL26trSxrq6srKysvL7/wMPDw8PCwL26trSxrq6srKysvL7/wMPDw8PCwL26trSxrq6srKysvL4=';
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
   }, []);
 
   useEffect(() => {
-    if (isRunning && seconds > 0) {
+    if (isRunning) {
+      startedAtRef.current = Date.now();
+      const startRemaining = pausedRemainingRef.current;
+
       intervalRef.current = setInterval(() => {
-        setSeconds(prev => {
-          if (prev <= 1) {
-            setIsRunning(false);
-            if (audioRef.current) {
-              audioRef.current.play().catch(() => {});
-            }
-            onComplete?.();
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
+        const elapsed = (Date.now() - startedAtRef.current!) / 1000;
+        const remaining = Math.max(0, Math.round(startRemaining - elapsed));
+        setSeconds(remaining);
+
+        if (remaining <= 0) {
+          setIsRunning(false);
+          pausedRemainingRef.current = 0;
+          playBeep();
+          onCompleteRef.current?.();
+          if (intervalRef.current) clearInterval(intervalRef.current);
+        }
+      }, 250);
     }
 
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [isRunning, onComplete, seconds]);
+  }, [isRunning, playBeep]);
 
-  const start = useCallback(() => setIsRunning(true), []);
-  const pause = useCallback(() => setIsRunning(false), []);
-  const reset = useCallback(() => {
+  const start = useCallback(() => {
+    warmAudio();
+    if (pausedRemainingRef.current <= 0) {
+      pausedRemainingRef.current = duration;
+      setSeconds(duration);
+    }
+    setIsRunning(true);
+  }, [duration, warmAudio]);
+
+  const pause = useCallback(() => {
+    warmAudio();
+    if (startedAtRef.current) {
+      const elapsed = (Date.now() - startedAtRef.current) / 1000;
+      pausedRemainingRef.current = Math.max(0, pausedRemainingRef.current - elapsed);
+    }
     setIsRunning(false);
-    setSeconds(duration);
-  }, [duration]);
+  }, [warmAudio]);
 
-  const setTimerDuration = useCallback((newDuration: number) => {
-    setDuration(newDuration);
+  const reset = useCallback(() => {
+    warmAudio();
+    setIsRunning(false);
+    startedAtRef.current = null;
+    pausedRemainingRef.current = duration;
+    setSeconds(duration);
+  }, [duration, warmAudio]);
+
+  const setDuration = useCallback((newDuration: number) => {
+    setDurationState(newDuration);
     setSeconds(newDuration);
     setIsRunning(false);
+    startedAtRef.current = null;
+    pausedRemainingRef.current = newDuration;
   }, []);
 
   const formatTime = useCallback((secs: number) => {
@@ -69,7 +148,7 @@ export function useTimer({ initialSeconds = 90, onComplete }: UseTimerOptions = 
     start,
     pause,
     reset,
-    setDuration: setTimerDuration,
+    setDuration,
     formatTime,
     formattedTime: formatTime(seconds),
   };

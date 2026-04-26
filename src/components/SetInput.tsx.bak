@@ -10,7 +10,7 @@ interface SetInputProps {
   set: WorkoutSet;
   index: number;
   exerciseMode?: 'reps' | 'time';
-  lastPerformance?: { reps: number; weight: number; rpe?: number; duration?: number; myoRestPauseCount?: number };
+  lastPerformance?: { reps: number; weight: number; rpe?: number; duration?: number };
   onUpdate: (set: WorkoutSet) => void;
   onComplete: (set: WorkoutSet) => void;
   isActive: boolean;
@@ -157,7 +157,6 @@ export function SetInput({ set, index, exerciseMode = 'reps', lastPerformance, o
               <span className="text-xs font-medium">
                 {lastPerformance.weight}kg × {lastPerformance.reps}
                 {lastPerformance.rpe && ` @${lastPerformance.rpe}`}
-                {lastPerformance.myoRestPauseCount && ` • ${lastPerformance.myoRestPauseCount} mini`}
               </span>
             </div>
           )}

@@ -1,0 +1,1916 @@
+{
+  "programs": [
+    {
+      "id": "1772563769035-edyu9wse",
+      "name": "PPL Force",
+      "sessions": [
+        {
+          "id": "1772563769035-gtmo2l8y",
+          "name": "Push",
+          "exercises": [
+            {
+              "id": "1772563769035-hsw4p4dr",
+              "name": "Dumbbell Bench",
+              "sets": [
+                {
+                  "id": "1772563769035-mdk17zux",
+                  "type": "myo-rep",
+                  "targetReps": 6,
+                  "targetWeight": 46,
+                  "isCompleted": false
+                },
+                {
+                  "id": "1772563769035-ftj5tbyq",
+                  "type": "myo-rep",
+                  "targetReps": 3,
+                  "targetWeight": 46,
+                  "isCompleted": false
+                }
+              ],
+              "mode": "reps"
+            },
+            {
+              "id": "1772563769035-hqhfuh2l",
+              "name": "Triceps Press",
+              "sets": [
+                {
+                  "id": "1772563769035-6k6pk5pp",
+                  "type": "myo-rep",
+                  "targetReps": 5,
+                  "targetWeight": 34,
+                  "isCompleted": false
+                },
+                {
+                  "id": "1772563769035-sk95cles",
+                  "type": "myo-rep",
+                  "targetReps": 6,
+                  "targetWeight": 34,
+                  "isCompleted": false
+                }
+              ],
+              "mode": "reps"
+            },
+            {
+              "id": "1772563769035-dqkhexzl",
+              "name": "Pompes Planches",
+              "sets": [
+                {
+                  "id": "1772563769035-n67ney00",
+                  "type": "myo-rep",
+                  "targetReps": 7,
+                  "targetWeight": 0,
+                  "isCompleted": false
+                },
+                {
+                  "id": "1772563769035-md17t7nt",
+                  "type": "myo-rep",
+                  "targetReps": 6,
+                  "targetWeight": 0,
+                  "isCompleted": false
+                },
+                {
+                  "id": "1773406861087-qldwpb1so",
+                  "type": "myo-rep",
+                  "targetReps": 6,
+                  "targetWeight": 0,
+                  "isCompleted": false
+                },
+                {
+                  "id": "1773406861475-mtbjbx7dx",
+                  "type": "myo-rep",
+                  "targetReps": 6,
+                  "targetWeight": 0,
+                  "isCompleted": false
+                }
+              ],
+              "mode": "reps"
+            },
+            {
+              "id": "1772563769035-wttbn3a8",
+              "name": "Lateral Bent Raise",
+              "sets": [
+                {
+                  "id": "1772563769035-63tpqetp",
+                  "type": "myo-rep",
+                  "targetReps": 16,
+                  "targetWeight": 10,
+                  "isCompleted": false
+                },
+                {
+                  "id": "1772563769035-easw8dig",
+                  "type": "myo-rep",
+                  "targetReps": 24,
+                  "targetWeight": 10,
+                  "isCompleted": false
+                }
+              ],
+              "mode": "reps"
+            },
+            {
+              "id": "1773401159546-391vf9jt8",
+              "name": "🔄 biceps",
+              "sets": [
+                {
+                  "id": "1773398861328-d2hatimv5",
+                  "type": "myo-rep",
+                  "targetReps": 14,
+                  "targetWeight": 20,
+                  "isCompleted": false
+                },
+                {
+                  "id": "1773398861328-45c953oar",
+                  "type": "myo-rep",
+                  "targetReps": 14,
+                  "targetWeight": 20,
+                  "isCompleted": false
+                }
+              ],
+              "mode": "reps",
+              "rotationGroupRef": "1773398831384-0ivltqjja"
+            },
+            {
+              "id": "1772563769035-e3qm1d2h",
+              "name": "Triceps Pushdown",
+              "sets": [
+                {
+                  "id": "1772563769035-wqha95kx",
+                  "type": "myo-rep",
+                  "targetReps": 12,
+                  "targetWeight": 36,
+                  "isCompleted": false
+                },
+                {
+                  "id": "1772563769035-kp4k7431",
+                  "type": "myo-rep",
+                  "targetReps": 20,
+                  "targetWeight": 36,
+                  "isCompleted": false
+                }
+              ],
+              "rotationGroup": "triceps",
+              "mode": "reps"
+            }
+          ]
+        },
+        {
+          "id": "1772563769035-z0jv34ef",
+          "name": "Legs Quad",
+          "exercises": [
+            {
+              "id": "1772563769035-qscfksze",
+              "name": "One Leg Squat",
+              "sets": [
+                {
+                  "id": "1772563769035-ifcyemkk",
+                  "type": "myo-rep",
+                  "targetReps": 5,
+                  "targetWeight": 20,
+                  "isCompleted": false
+                },
+                {
+                  "id": "1772563769035-sk8semdy",
+                  "type": "myo-rep",
+                  "targetReps": 5,
+                  "targetWeight": 20,
+                  "isCompleted": false
+                }
+              ],
+              "mode": "reps"
+            },
+            {
+              "id": "1772563769035-o6j3q74t",
+              "name": "Back Squat",
+              "sets": [
+                {
+                  "id": "1772563769035-01yggbpb",
+                  "type": "myo-rep",
+                  "targetReps": 6,
+                  "targetWeight": 85,
+                  "isCompleted": false
+                },
+                {
+                  "id": "1772563769035-el4m5k00",
+                  "type": "myo-rep",
+                  "targetReps": 6,
+                  "targetWeight": 85,
+                  "isCompleted": false
+                }
+              ],
+              "mode": "reps"
+            },
+            {
+              "id": "1772563769035-60pggfqa",
+              "name": "Presse",
+              "sets": [
+                {
+                  "id": "1772563769035-hurwui1r",
+                  "type": "myo-rep",
+                  "targetReps": 5,
+                  "targetWeight": 100,
+                  "isCompleted": false
+                },
+                {
+                  "id": "1772563769035-9sqk0qfy",
+                  "type": "myo-rep",
+                  "targetReps": 5,
+                  "targetWeight": 100,
+                  "isCompleted": false
+                }
+              ],
+              "mode": "reps"
+            },
+            {
+              "id": "1772563769035-bo8c8jly",
+              "name": "Triceps",
+              "sets": [
+                {
+                  "id": "1772563769035-1eh0ovos",
+                  "type": "myo-rep",
+                  "targetReps": 20,
+                  "targetWeight": 32,
+                  "isCompleted": false
+                },
+                {
+                  "id": "1772563769035-qgukzju0",
+                  "type": "myo-rep",
+                  "targetReps": 21,
+                  "targetWeight": 32,
+                  "isCompleted": false
+                }
+              ],
+              "rotationGroup": "triceps",
+              "mode": "reps"
+            },
+            {
+              "id": "1772563769035-aula4rwc",
+              "name": "Avant-bras",
+              "sets": [
+                {
+                  "id": "1772563769035-a5q3c257",
+                  "type": "myo-rep",
+                  "targetReps": 16,
+                  "targetWeight": 91,
+                  "isCompleted": false
+                },
+                {
+                  "id": "1772563769035-eds2j44o",
+                  "type": "myo-rep",
+                  "targetReps": 23,
+                  "targetWeight": 91,
+                  "isCompleted": false
+                },
+                {
+                  "id": "1773421692919-j8eoiktui",
+                  "type": "myo-rep",
+                  "targetReps": 23,
+                  "targetWeight": 91,
+                  "isCompleted": false
+                }
+              ],
+              "mode": "time"
+            }
+          ]
+        },
+        {
+          "id": "1772563769035-fa7hpgaw",
+          "name": "Pull",
+          "exercises": [
+            {
+              "id": "1772563769035-ja2n900l",
+              "name": "Pull Up",
+              "sets": [
+                {
+                  "id": "1772563769035-95xd6wvx",
+                  "type": "myo-rep",
+                  "targetReps": 4,
+                  "targetWeight": 32,
+                  "isCompleted": false
+                },
+                {
+                  "id": "1772563769035-98uiu9h8",
+                  "type": "myo-rep",
+                  "targetReps": 4,
+                  "targetWeight": 32,
+                  "isCompleted": false
+                },
+                {
+                  "id": "1773680052015-96qmmghet",
+                  "type": "myo-rep",
+                  "targetReps": 4,
+                  "targetWeight": 32,
+                  "isCompleted": false
+                }
+              ],
+              "mode": "reps"
+            },
+            {
+              "id": "1772563769035-z9d7m8ys",
+              "name": "Lat Pull Down",
+              "sets": [
+                {
+                  "id": "1772563769035-nxnpdlzp",
+                  "type": "myo-rep",
+                  "targetReps": 5,
+                  "targetWeight": 36,
+                  "isCompleted": false
+                },
+                {
+                  "id": "1772563769035-i1mqjqd4",
+                  "type": "myo-rep",
+                  "targetReps": 4,
+                  "targetWeight": 36,
+                  "isCompleted": false
+                }
+              ],
+              "mode": "reps"
+            },
+            {
+              "id": "1772563769035-mjse20y7",
+              "name": "Horizontal Pull Close Neutral Grip",
+              "sets": [
+                {
+                  "id": "1772563769035-w41royv6",
+                  "type": "myo-rep",
+                  "targetReps": 6,
+                  "targetWeight": 120,
+                  "isCompleted": false
+                },
+                {
+                  "id": "1772563769035-5sctn8it",
+                  "type": "myo-rep",
+                  "targetReps": 5,
+                  "targetWeight": 120,
+                  "isCompleted": false
+                }
+              ],
+              "mode": "reps"
+            },
+            {
+              "id": "1772563769035-vq8kh5w2",
+              "name": "Leaned Plank",
+              "sets": [
+                {
+                  "id": "1772563769035-b9c6m3n5",
+                  "type": "myo-rep",
+                  "targetReps": 4,
+                  "targetWeight": 0,
+                  "isCompleted": false
+                },
+                {
+                  "id": "1772563769035-kg7b5kc6",
+                  "type": "myo-rep",
+                  "targetReps": 9,
+                  "targetWeight": 0,
+                  "isCompleted": false
+                },
+                {
+                  "id": "1773406878613-e0byp3ojn",
+                  "type": "myo-rep",
+                  "targetReps": 9,
+                  "targetWeight": 0,
+                  "isCompleted": false
+                }
+              ],
+              "mode": "reps"
+            },
+            {
+              "id": "1773590151089-cojeqd8ui",
+              "name": "Tucked Push Ups",
+              "sets": [
+                {
+                  "id": "1773590151089-6uix7vtrp",
+                  "type": "force",
+                  "targetReps": 6,
+                  "targetWeight": 0,
+                  "isCompleted": false
+                },
+                {
+                  "id": "1773590151089-wc3sezt5e",
+                  "type": "force",
+                  "targetReps": 6,
+                  "targetWeight": 0,
+                  "isCompleted": false
+                },
+                {
+                  "id": "1773590414203-dlze6887d",
+                  "type": "force",
+                  "targetReps": 6,
+                  "targetWeight": 0,
+                  "isCompleted": false
+                }
+              ],
+              "mode": "reps"
+            }
+          ],
+          "type": "myo-rep"
+        },
+        {
+          "id": "1772563769035-jmfyvxts",
+          "name": "Legs Post",
+          "exercises": [
+            {
+              "id": "1772563769035-uztzllip",
+              "name": "Gainage Dorsal / Lean Forward Plank",
+              "sets": [
+                {
+                  "id": "1772563769035-0o1xmhy2",
+                  "type": "myo-rep",
+                  "targetReps": 3,
+                  "targetWeight": 5,
+                  "isCompleted": false
+                },
+                {
+                  "id": "1772563769035-23ppn2vr",
+                  "type": "myo-rep",
+                  "targetReps": 3,
+                  "targetWeight": 5,
+                  "isCompleted": false
+                },
+                {
+                  "id": "1773853701390-y9ce0vczm",
+                  "type": "myo-rep",
+                  "targetReps": 3,
+                  "targetWeight": 5,
+                  "isCompleted": false
+                }
+              ],
+              "mode": "reps"
+            },
+            {
+              "id": "1772563769035-f0izkvri",
+              "name": "Probed Leg Curl",
+              "sets": [
+                {
+                  "id": "1772563769035-dh3tc8l7",
+                  "type": "myo-rep",
+                  "targetReps": 14,
+                  "targetWeight": 93,
+                  "isCompleted": false
+                },
+                {
+                  "id": "1772563769035-4j2ks6ma",
+                  "type": "myo-rep",
+                  "targetReps": 24,
+                  "targetWeight": 93,
+                  "isCompleted": false
+                }
+              ],
+              "mode": "reps"
+            },
+            {
+              "id": "1772563769035-3rymuzr4",
+              "name": "Dead Lift Slow Motion",
+              "sets": [
+                {
+                  "id": "1772563769035-3wikw6dt",
+                  "type": "myo-rep",
+                  "targetReps": 4,
+                  "targetWeight": 120,
+                  "isCompleted": false
+                },
+                {
+                  "id": "1772563769035-e5vl6jll",
+                  "type": "myo-rep",
+                  "targetReps": 5,
+                  "targetWeight": 120,
+                  "isCompleted": false
+                }
+              ],
+              "mode": "reps"
+            },
+            {
+              "id": "1773401192320-wsyq1rmcv",
+              "name": "🔄 biceps",
+              "sets": [
+                {
+                  "id": "1773398861328-d2hatimv5",
+                  "type": "myo-rep",
+                  "targetReps": 14,
+                  "targetWeight": 20,
+                  "isCompleted": false
+                },
+                {
+                  "id": "1773398861328-45c953oar",
+                  "type": "myo-rep",
+                  "targetReps": 14,
+                  "targetWeight": 20,
+                  "isCompleted": false
+                }
+              ],
+              "mode": "reps",
+              "rotationGroupRef": "1773398831384-0ivltqjja"
+            },
+            {
+              "id": "1772563769035-cf8ypubk",
+              "name": "Avant-bras",
+              "sets": [
+                {
+                  "id": "1772563769035-w3j0btw7",
+                  "type": "myo-rep",
+                  "targetReps": 16,
+                  "targetWeight": 91,
+                  "isCompleted": false
+                },
+                {
+                  "id": "1772563769035-hyj00158",
+                  "type": "myo-rep",
+                  "targetReps": 23,
+                  "targetWeight": 91,
+                  "isCompleted": false
+                }
+              ],
+              "mode": "time"
+            }
+          ]
+        }
+      ],
+      "createdAt": "2026-03-03T18:49:29.035Z",
+      "rotationGroups": [
+        {
+          "id": "1773398831384-0ivltqjja",
+          "name": "biceps",
+          "exercises": [
+            {
+              "id": "1773398861328-4dem5pjzk",
+              "name": "Curl Haltères",
+              "sets": [
+                {
+                  "id": "1773398861328-d2hatimv5",
+                  "type": "myo-rep",
+                  "targetReps": 14,
+                  "targetWeight": 20,
+                  "isCompleted": false
+                },
+                {
+                  "id": "1773398861328-45c953oar",
+                  "type": "myo-rep",
+                  "targetReps": 14,
+                  "targetWeight": 20,
+                  "isCompleted": false
+                }
+              ],
+              "mode": "reps"
+            },
+            {
+              "id": "1773398887137-6eclaknau",
+              "name": "Curl Marteau Interne",
+              "sets": [
+                {
+                  "id": "1773398887137-cqy24sqvq",
+                  "type": "myo-rep",
+                  "targetReps": 11,
+                  "targetWeight": 16,
+                  "isCompleted": false
+                },
+                {
+                  "id": "1773398887137-gsg2a5zxn",
+                  "type": "myo-rep",
+                  "targetReps": 11,
+                  "targetWeight": 16,
+                  "isCompleted": false
+                }
+              ],
+              "mode": "reps"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "history": [
+    {
+      "id": "1772584365941-eaw01jcxh",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-gtmo2l8y",
+      "exerciseId": "1772563769035-hsw4p4dr",
+      "setId": "1772563769035-mdk17zux",
+      "reps": 4,
+      "weight": 48,
+      "rpe": 9.5,
+      "completedAt": "2026-03-04T00:32:45.941Z",
+      "setType": "myo-rep"
+    },
+    {
+      "id": "1772584372921-zsopxa1yg",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-gtmo2l8y",
+      "exerciseId": "1772563769035-hsw4p4dr",
+      "setId": "1772563769035-ftj5tbyq",
+      "reps": 4,
+      "weight": 48,
+      "rpe": 9.5,
+      "completedAt": "2026-03-04T00:32:52.921Z",
+      "setType": "myo-rep"
+    },
+    {
+      "id": "1772584378261-09radkfe1",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-gtmo2l8y",
+      "exerciseId": "1772563769035-hsw4p4dr",
+      "setId": "1772563769035-scscjkvc",
+      "reps": 4,
+      "weight": 48,
+      "rpe": 9.5,
+      "completedAt": "2026-03-04T00:32:58.261Z",
+      "setType": "myo-rep"
+    },
+    {
+      "id": "1772584385335-ia39g47qf",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-gtmo2l8y",
+      "exerciseId": "1772563769035-hqhfuh2l",
+      "setId": "1772563769035-6k6pk5pp",
+      "reps": 4,
+      "weight": 36,
+      "rpe": 9.5,
+      "completedAt": "2026-03-04T00:33:05.335Z",
+      "setType": "myo-rep"
+    },
+    {
+      "id": "1772584391959-0xjciimdx",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-gtmo2l8y",
+      "exerciseId": "1772563769035-hqhfuh2l",
+      "setId": "1772563769035-sk95cles",
+      "reps": 4,
+      "weight": 36,
+      "rpe": 9.5,
+      "completedAt": "2026-03-04T00:33:11.959Z",
+      "setType": "myo-rep"
+    },
+    {
+      "id": "1772584398144-rg7unlfc5",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-gtmo2l8y",
+      "exerciseId": "1772563769035-hqhfuh2l",
+      "setId": "1772563769035-udpbjmwb",
+      "reps": 4,
+      "weight": 36,
+      "rpe": 9.5,
+      "completedAt": "2026-03-04T00:33:18.144Z",
+      "setType": "myo-rep"
+    },
+    {
+      "id": "1772584403912-dqiepxr2k",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-gtmo2l8y",
+      "exerciseId": "1772563769035-dqkhexzl",
+      "setId": "1772563769035-n67ney00",
+      "reps": 8,
+      "weight": 0,
+      "rpe": 9.5,
+      "completedAt": "2026-03-04T00:33:23.912Z",
+      "setType": "myo-rep"
+    },
+    {
+      "id": "1772584406020-01ezjkqgw",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-gtmo2l8y",
+      "exerciseId": "1772563769035-dqkhexzl",
+      "setId": "1772563769035-md17t7nt",
+      "reps": 7,
+      "weight": 0,
+      "rpe": 9.5,
+      "completedAt": "2026-03-04T00:33:26.020Z",
+      "setType": "myo-rep"
+    },
+    {
+      "id": "1772584408716-p7vyo4bsj",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-gtmo2l8y",
+      "exerciseId": "1772563769035-dqkhexzl",
+      "setId": "1772563769035-sa3hdcc2",
+      "reps": 5,
+      "weight": 0,
+      "rpe": 9.5,
+      "completedAt": "2026-03-04T00:33:28.716Z",
+      "setType": "myo-rep"
+    },
+    {
+      "id": "1772584420386-vg75eg5d4",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-gtmo2l8y",
+      "exerciseId": "1772563769035-wttbn3a8",
+      "setId": "1772563769035-63tpqetp",
+      "reps": 11,
+      "weight": 12,
+      "rpe": 9.5,
+      "completedAt": "2026-03-04T00:33:40.386Z",
+      "setType": "myo-rep"
+    },
+    {
+      "id": "1772584441528-aht4dppgl",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-gtmo2l8y",
+      "exerciseId": "1772563769035-wttbn3a8",
+      "setId": "1772563769035-easw8dig",
+      "reps": 21,
+      "weight": 12,
+      "rpe": 9.5,
+      "completedAt": "2026-03-04T00:34:01.528Z",
+      "setType": "myo-rep"
+    },
+    {
+      "id": "1772584457799-s6bnc8q7k",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-gtmo2l8y",
+      "exerciseId": "1772563769035-mcf3lsmp",
+      "setId": "1772563769035-j6qgr996",
+      "reps": 11,
+      "weight": 20,
+      "rpe": 9,
+      "completedAt": "2026-03-04T00:34:17.799Z",
+      "setType": "force"
+    },
+    {
+      "id": "1772584466545-bqp51hqbp",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-gtmo2l8y",
+      "exerciseId": "1772563769035-mcf3lsmp",
+      "setId": "1772563769035-mstw678w",
+      "reps": 20,
+      "weight": 20,
+      "rpe": 9,
+      "completedAt": "2026-03-04T00:34:26.545Z",
+      "setType": "force"
+    },
+    {
+      "id": "1772584475603-xliw2s7bu",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-gtmo2l8y",
+      "exerciseId": "1772563769035-e3qm1d2h",
+      "setId": "1772563769035-wqha95kx",
+      "reps": 14,
+      "weight": 36,
+      "rpe": 8.5,
+      "completedAt": "2026-03-04T00:34:35.603Z",
+      "setType": "myo-rep"
+    },
+    {
+      "id": "1772584478973-u93apiwcp",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-gtmo2l8y",
+      "exerciseId": "1772563769035-e3qm1d2h",
+      "setId": "1772563769035-kp4k7431",
+      "reps": 20,
+      "weight": 36,
+      "rpe": 8.5,
+      "completedAt": "2026-03-04T00:34:38.973Z",
+      "setType": "myo-rep"
+    },
+    {
+      "id": "1772796328561-z36gx3em9",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-z0jv34ef",
+      "exerciseId": "1772563769035-qscfksze",
+      "setId": "1772563769035-ifcyemkk",
+      "reps": 5,
+      "weight": 20,
+      "rpe": 9.5,
+      "completedAt": "2026-03-06T11:25:28.561Z",
+      "setType": "myo-rep"
+    },
+    {
+      "id": "1772796626007-x9xg2c9qz",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-z0jv34ef",
+      "exerciseId": "1772563769035-qscfksze",
+      "setId": "1772563769035-sk8semdy",
+      "reps": 5,
+      "weight": 20,
+      "rpe": 10,
+      "completedAt": "2026-03-06T11:30:26.007Z",
+      "setType": "myo-rep"
+    },
+    {
+      "id": "1772796893836-heqqzkku8",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-z0jv34ef",
+      "exerciseId": "1772563769035-qscfksze",
+      "setId": "1772563769035-d313qh2j",
+      "reps": 5,
+      "weight": 20,
+      "rpe": 9.5,
+      "completedAt": "2026-03-06T11:34:53.836Z",
+      "setType": "myo-rep"
+    },
+    {
+      "id": "1772797293231-gf5q2yumb",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-z0jv34ef",
+      "exerciseId": "1772563769035-o6j3q74t",
+      "setId": "1772563769035-01yggbpb",
+      "reps": 5,
+      "weight": 90,
+      "rpe": 9,
+      "completedAt": "2026-03-06T11:41:33.232Z",
+      "setType": "myo-rep"
+    },
+    {
+      "id": "1772797635141-g8u8izyvk",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-z0jv34ef",
+      "exerciseId": "1772563769035-o6j3q74t",
+      "setId": "1772563769035-el4m5k00",
+      "reps": 5,
+      "weight": 90,
+      "rpe": 7,
+      "completedAt": "2026-03-06T11:47:15.141Z",
+      "setType": "myo-rep"
+    },
+    {
+      "id": "1772797999928-2dtr0wc65",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-z0jv34ef",
+      "exerciseId": "1772563769035-o6j3q74t",
+      "setId": "1772563769035-8z9weq33",
+      "reps": 5,
+      "weight": 90,
+      "rpe": 9.5,
+      "completedAt": "2026-03-06T11:53:19.928Z",
+      "setType": "myo-rep"
+    },
+    {
+      "id": "1772798225241-v9axncenx",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-z0jv34ef",
+      "exerciseId": "1772563769035-60pggfqa",
+      "setId": "1772563769035-hurwui1r",
+      "reps": 6,
+      "weight": 100,
+      "rpe": 9.5,
+      "completedAt": "2026-03-06T11:57:05.242Z",
+      "setType": "myo-rep"
+    },
+    {
+      "id": "1772798454375-vukbynfvm",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-z0jv34ef",
+      "exerciseId": "1772563769035-60pggfqa",
+      "setId": "1772563769035-9sqk0qfy",
+      "reps": 6,
+      "weight": 100,
+      "rpe": 9.5,
+      "completedAt": "2026-03-06T12:00:54.376Z",
+      "setType": "myo-rep"
+    },
+    {
+      "id": "1772798670956-7h73l2lbv",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-z0jv34ef",
+      "exerciseId": "1772563769035-60pggfqa",
+      "setId": "1772563769035-sm8tiyem",
+      "reps": 4,
+      "weight": 100,
+      "rpe": 10,
+      "completedAt": "2026-03-06T12:04:30.957Z",
+      "setType": "myo-rep"
+    },
+    {
+      "id": "1772798824532-b6wqpny71",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-z0jv34ef",
+      "exerciseId": "1772563769035-bo8c8jly",
+      "setId": "1772563769035-1eh0ovos",
+      "reps": 13,
+      "weight": 36,
+      "rpe": 8,
+      "completedAt": "2026-03-06T12:07:04.532Z",
+      "setType": "myo-rep"
+    },
+    {
+      "id": "1772799156964-0wrtf4i8e",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-z0jv34ef",
+      "exerciseId": "1772563769035-bo8c8jly",
+      "setId": "1772563769035-qgukzju0",
+      "reps": 20,
+      "weight": 36,
+      "rpe": 9.5,
+      "completedAt": "2026-03-06T12:12:36.964Z",
+      "setType": "myo-rep"
+    },
+    {
+      "id": "1772992391528-blx2tvbwq",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-fa7hpgaw",
+      "exerciseId": "1772563769035-ja2n900l",
+      "setId": "1772563769035-95xd6wvx",
+      "reps": 4,
+      "weight": 32,
+      "rpe": 7,
+      "completedAt": "2026-03-08T17:53:11.528Z",
+      "setType": "myo-rep"
+    },
+    {
+      "id": "1772992611394-u6fmr1l4z",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-fa7hpgaw",
+      "exerciseId": "1772563769035-ja2n900l",
+      "setId": "1772563769035-98uiu9h8",
+      "reps": 4,
+      "weight": 32,
+      "rpe": 7,
+      "completedAt": "2026-03-08T17:56:51.395Z",
+      "setType": "myo-rep"
+    },
+    {
+      "id": "1772993116604-9znpbmhtf",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-fa7hpgaw",
+      "exerciseId": "1772563769035-ja2n900l",
+      "setId": "1772563769035-0ybe5zk2",
+      "reps": 4,
+      "weight": 32,
+      "rpe": 10,
+      "completedAt": "2026-03-08T18:05:16.605Z",
+      "setType": "myo-rep"
+    },
+    {
+      "id": "1772993275307-3io468efe",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-fa7hpgaw",
+      "exerciseId": "1772563769035-z9d7m8ys",
+      "setId": "1772563769035-nxnpdlzp",
+      "reps": 6,
+      "weight": 36,
+      "rpe": 9.5,
+      "completedAt": "2026-03-08T18:07:55.307Z",
+      "setType": "myo-rep"
+    },
+    {
+      "id": "1772993545398-tbowqtuii",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-fa7hpgaw",
+      "exerciseId": "1772563769035-z9d7m8ys",
+      "setId": "1772563769035-i1mqjqd4",
+      "reps": 5,
+      "weight": 36,
+      "rpe": 9,
+      "completedAt": "2026-03-08T18:12:25.398Z",
+      "setType": "myo-rep"
+    },
+    {
+      "id": "1772993811776-j26e48g5d",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-fa7hpgaw",
+      "exerciseId": "1772563769035-z9d7m8ys",
+      "setId": "1772563769035-312kvshu",
+      "reps": 5,
+      "weight": 36,
+      "rpe": 9,
+      "completedAt": "2026-03-08T18:16:51.776Z",
+      "setType": "myo-rep"
+    },
+    {
+      "id": "1772993973295-w3d8dslag",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-fa7hpgaw",
+      "exerciseId": "1772563769035-mjse20y7",
+      "setId": "1772563769035-w41royv6",
+      "reps": 5,
+      "weight": 120,
+      "rpe": 10,
+      "completedAt": "2026-03-08T18:19:33.296Z",
+      "setType": "myo-rep"
+    },
+    {
+      "id": "1772994980273-9lut53j3t",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-fa7hpgaw",
+      "exerciseId": "1772563769035-mjse20y7",
+      "setId": "1772563769035-5sctn8it",
+      "reps": 10,
+      "weight": 120,
+      "rpe": 7,
+      "completedAt": "2026-03-08T18:36:20.273Z",
+      "setType": "myo-rep"
+    },
+    {
+      "id": "1772994995197-om7zl9nr1",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-fa7hpgaw",
+      "exerciseId": "1772563769035-vq8kh5w2",
+      "setId": "1772563769035-b9c6m3n5",
+      "reps": 4,
+      "weight": 0,
+      "rpe": 7,
+      "completedAt": "2026-03-08T18:36:35.198Z",
+      "setType": "myo-rep"
+    },
+    {
+      "id": "1772994997087-b31u6r37o",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-fa7hpgaw",
+      "exerciseId": "1772563769035-vq8kh5w2",
+      "setId": "1772563769035-kg7b5kc6",
+      "reps": 9,
+      "weight": 0,
+      "rpe": 7,
+      "completedAt": "2026-03-08T18:36:37.087Z",
+      "setType": "myo-rep"
+    },
+    {
+      "id": "1773142693840-3bl4c52q9",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-jmfyvxts",
+      "exerciseId": "1772563769035-uztzllip",
+      "setId": "1772563769035-0o1xmhy2",
+      "reps": 3,
+      "weight": 5,
+      "rpe": 8.5,
+      "completedAt": "2026-03-10T11:38:13.840Z",
+      "setType": "myo-rep"
+    },
+    {
+      "id": "1773142704922-0xlgf63jr",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-jmfyvxts",
+      "exerciseId": "1772563769035-uztzllip",
+      "setId": "1772563769035-23ppn2vr",
+      "reps": 3,
+      "weight": 0,
+      "rpe": 7,
+      "completedAt": "2026-03-10T11:38:24.922Z",
+      "setType": "myo-rep"
+    },
+    {
+      "id": "1773142753813-o9q1n5so1",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-jmfyvxts",
+      "exerciseId": "1772563769035-f0izkvri",
+      "setId": "1772563769035-dh3tc8l7",
+      "reps": 11,
+      "weight": 100,
+      "rpe": 8.5,
+      "completedAt": "2026-03-10T11:39:13.813Z",
+      "setType": "myo-rep"
+    },
+    {
+      "id": "1773142995438-sjyyrl6cx",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-jmfyvxts",
+      "exerciseId": "1772563769035-f0izkvri",
+      "setId": "1772563769035-4j2ks6ma",
+      "reps": 21,
+      "weight": 100,
+      "rpe": 8.5,
+      "completedAt": "2026-03-10T11:43:15.439Z",
+      "setType": "myo-rep"
+    },
+    {
+      "id": "1773143864211-mt0le2t4g",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-jmfyvxts",
+      "exerciseId": "1772563769035-3rymuzr4",
+      "setId": "1772563769035-3wikw6dt",
+      "reps": 5,
+      "weight": 120,
+      "rpe": 7,
+      "completedAt": "2026-03-10T11:57:44.211Z",
+      "setType": "myo-rep"
+    },
+    {
+      "id": "1773144136913-lnjr39za4",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-jmfyvxts",
+      "exerciseId": "1772563769035-3rymuzr4",
+      "setId": "1772563769035-e5vl6jll",
+      "reps": 5,
+      "weight": 120,
+      "rpe": 7,
+      "completedAt": "2026-03-10T12:02:16.913Z",
+      "setType": "myo-rep"
+    },
+    {
+      "id": "1773144488499-a4zbg6dxf",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-jmfyvxts",
+      "exerciseId": "1772563769035-3rymuzr4",
+      "setId": "1772563769035-qs5tajrh",
+      "reps": 5,
+      "weight": 120,
+      "rpe": 7,
+      "completedAt": "2026-03-10T12:08:08.499Z",
+      "setType": "myo-rep"
+    },
+    {
+      "id": "1773144979604-3p4i1yi8i",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-jmfyvxts",
+      "exerciseId": "1772563769035-hq9ahlfn",
+      "setId": "1772563769035-eitv5yfv",
+      "reps": 13,
+      "weight": 20,
+      "rpe": 7,
+      "completedAt": "2026-03-10T12:16:19.604Z",
+      "setType": "force"
+    },
+    {
+      "id": "1773145358148-gjxlepbh5",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-jmfyvxts",
+      "exerciseId": "1772563769035-hq9ahlfn",
+      "setId": "1772563769035-xycvqihk",
+      "reps": 21,
+      "weight": 20,
+      "rpe": 7,
+      "completedAt": "2026-03-10T12:22:38.148Z",
+      "setType": "force"
+    },
+    {
+      "id": "1773145365010-1a8r0d65i",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-jmfyvxts",
+      "exerciseId": "1772563769035-cf8ypubk",
+      "setId": "1772563769035-w3j0btw7",
+      "reps": 16,
+      "weight": 91,
+      "rpe": 7,
+      "completedAt": "2026-03-10T12:22:45.010Z",
+      "setType": "myo-rep"
+    },
+    {
+      "id": "1773145365915-a3ovnz87n",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-jmfyvxts",
+      "exerciseId": "1772563769035-cf8ypubk",
+      "setId": "1772563769035-hyj00158",
+      "reps": 23,
+      "weight": 91,
+      "rpe": 7,
+      "completedAt": "2026-03-10T12:22:45.915Z",
+      "setType": "myo-rep"
+    },
+    {
+      "id": "1773403648236-2tk2tvl2h",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-gtmo2l8y",
+      "exerciseId": "1772563769035-hsw4p4dr",
+      "setId": "1772563769035-mdk17zux",
+      "reps": 14,
+      "weight": 28,
+      "setType": "myo-rep",
+      "rpe": 9.5,
+      "completedAt": "2026-03-12T12:07:28.236Z"
+    },
+    {
+      "id": "1773403709304-j69zvgpqo",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-gtmo2l8y",
+      "exerciseId": "1772563769035-hsw4p4dr",
+      "setId": "1772563769035-ftj5tbyq",
+      "reps": 21,
+      "weight": 28,
+      "setType": "myo-rep",
+      "rpe": 9.5,
+      "completedAt": "2026-03-12T12:08:29.304Z"
+    },
+    {
+      "id": "1773403733478-z3ljxxbnz",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-gtmo2l8y",
+      "exerciseId": "1772563769035-hqhfuh2l",
+      "setId": "1772563769035-6k6pk5pp",
+      "reps": 13,
+      "weight": 18,
+      "setType": "myo-rep",
+      "rpe": 9.5,
+      "completedAt": "2026-03-12T12:08:53.478Z"
+    },
+    {
+      "id": "1773403745170-n57ubuigl",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-gtmo2l8y",
+      "exerciseId": "1772563769035-hqhfuh2l",
+      "setId": "1772563769035-sk95cles",
+      "reps": 22,
+      "weight": 18,
+      "setType": "myo-rep",
+      "rpe": 7,
+      "completedAt": "2026-03-12T12:09:05.170Z"
+    },
+    {
+      "id": "1773408611881-j9wllg64r",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-gtmo2l8y",
+      "exerciseId": "1772563769035-hsw4p4dr",
+      "setId": "1772563769035-mdk17zux",
+      "reps": 14,
+      "weight": 28,
+      "setType": "myo-rep",
+      "rpe": 9.5,
+      "completedAt": "2026-03-12T13:30:11.881Z"
+    },
+    {
+      "id": "1773408614079-1mvo24kj7",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-gtmo2l8y",
+      "exerciseId": "1772563769035-hsw4p4dr",
+      "setId": "1772563769035-ftj5tbyq",
+      "reps": 21,
+      "weight": 28,
+      "setType": "myo-rep",
+      "rpe": 9.5,
+      "completedAt": "2026-03-12T13:30:14.079Z"
+    },
+    {
+      "id": "1773408617407-qxn7phtep",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-gtmo2l8y",
+      "exerciseId": "1772563769035-hqhfuh2l",
+      "setId": "1772563769035-6k6pk5pp",
+      "reps": 13,
+      "weight": 18,
+      "setType": "myo-rep",
+      "rpe": 9.5,
+      "completedAt": "2026-03-12T13:30:17.407Z"
+    },
+    {
+      "id": "1773408619421-5vop4vsya",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-gtmo2l8y",
+      "exerciseId": "1772563769035-hqhfuh2l",
+      "setId": "1772563769035-sk95cles",
+      "reps": 22,
+      "weight": 18,
+      "setType": "myo-rep",
+      "rpe": 9.5,
+      "completedAt": "2026-03-12T13:30:19.421Z"
+    },
+    {
+      "id": "1773408672512-gbaiokn7d",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-gtmo2l8y",
+      "exerciseId": "1772563769035-dqkhexzl",
+      "setId": "1772563769035-n67ney00",
+      "reps": 11,
+      "weight": 0,
+      "setType": "myo-rep",
+      "rpe": 9.5,
+      "completedAt": "2026-03-12T13:31:12.512Z"
+    },
+    {
+      "id": "1773408679070-2e5ulpxg7",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-gtmo2l8y",
+      "exerciseId": "1772563769035-dqkhexzl",
+      "setId": "1772563769035-md17t7nt",
+      "reps": 11,
+      "weight": 0,
+      "setType": "myo-rep",
+      "rpe": 8.5,
+      "completedAt": "2026-03-12T13:31:19.071Z"
+    },
+    {
+      "id": "1773408684259-tn4fsrvqp",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-gtmo2l8y",
+      "exerciseId": "1772563769035-dqkhexzl",
+      "setId": "1773406861087-qldwpb1so",
+      "reps": 7,
+      "weight": 0,
+      "setType": "myo-rep",
+      "rpe": 8.5,
+      "completedAt": "2026-03-12T13:31:24.259Z"
+    },
+    {
+      "id": "1773408691835-s9405plr1",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-gtmo2l8y",
+      "exerciseId": "1772563769035-dqkhexzl",
+      "setId": "1773406861475-mtbjbx7dx",
+      "reps": 5,
+      "weight": 0,
+      "setType": "myo-rep",
+      "rpe": 9.5,
+      "completedAt": "2026-03-12T13:31:31.835Z"
+    },
+    {
+      "id": "1773408708497-xax9w7tf2",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-gtmo2l8y",
+      "exerciseId": "1772563769035-wttbn3a8",
+      "setId": "1772563769035-63tpqetp",
+      "reps": 12,
+      "weight": 12,
+      "setType": "myo-rep",
+      "rpe": 9.5,
+      "completedAt": "2026-03-12T13:31:48.497Z"
+    },
+    {
+      "id": "1773408724458-ch5uphdm4",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-gtmo2l8y",
+      "exerciseId": "1772563769035-wttbn3a8",
+      "setId": "1772563769035-easw8dig",
+      "reps": 20,
+      "weight": 12,
+      "setType": "myo-rep",
+      "rpe": 9.5,
+      "completedAt": "2026-03-12T13:32:04.458Z"
+    },
+    {
+      "id": "1773408739653-ulan3u8q1",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-gtmo2l8y",
+      "exerciseId": "1773398861328-4dem5pjzk",
+      "setId": "1773398861328-d2hatimv5",
+      "reps": 14,
+      "weight": 20,
+      "setType": "myo-rep",
+      "rpe": 9.5,
+      "completedAt": "2026-03-12T13:32:19.653Z"
+    },
+    {
+      "id": "1773408742333-ol8cqaj8o",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-gtmo2l8y",
+      "exerciseId": "1773398861328-4dem5pjzk",
+      "setId": "1773398861328-45c953oar",
+      "reps": 14,
+      "weight": 20,
+      "setType": "myo-rep",
+      "rpe": 9.5,
+      "completedAt": "2026-03-12T13:32:22.333Z"
+    },
+    {
+      "id": "1773419060507-6fxnbc5m0",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-z0jv34ef",
+      "exerciseId": "1772563769035-o6j3q74t",
+      "setId": "1772563769035-01yggbpb",
+      "reps": 22,
+      "weight": 7,
+      "setType": "myo-rep",
+      "rpe": 7,
+      "completedAt": "2026-03-13T16:24:20.508Z"
+    },
+    {
+      "id": "1773419592619-nnxzhogvw",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-z0jv34ef",
+      "exerciseId": "1772563769035-o6j3q74t",
+      "setId": "1772563769035-el4m5k00",
+      "reps": 42,
+      "weight": 7,
+      "setType": "myo-rep",
+      "rpe": 8.5,
+      "completedAt": "2026-03-13T16:33:12.619Z"
+    },
+    {
+      "id": "1773419894010-2hnpagx8d",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-z0jv34ef",
+      "exerciseId": "1772563769035-60pggfqa",
+      "setId": "1772563769035-hurwui1r",
+      "reps": 12,
+      "weight": 60,
+      "setType": "myo-rep",
+      "rpe": 7,
+      "completedAt": "2026-03-13T16:38:14.010Z"
+    },
+    {
+      "id": "1773420246077-dixre2whi",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-z0jv34ef",
+      "exerciseId": "1772563769035-60pggfqa",
+      "setId": "1772563769035-9sqk0qfy",
+      "reps": 21,
+      "weight": 60,
+      "setType": "myo-rep",
+      "rpe": 8.5,
+      "completedAt": "2026-03-13T16:44:06.077Z"
+    },
+    {
+      "id": "1773420734344-4tf9l759j",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-z0jv34ef",
+      "exerciseId": "1772563769035-qscfksze",
+      "setId": "1772563769035-ifcyemkk",
+      "reps": 10,
+      "weight": 40,
+      "setType": "myo-rep",
+      "rpe": 7,
+      "completedAt": "2026-03-13T16:52:14.344Z"
+    },
+    {
+      "id": "1773420970670-wm0pm5c7u",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-z0jv34ef",
+      "exerciseId": "1772563769035-o6j3q74t",
+      "setId": "1772563769035-01yggbpb",
+      "reps": 12,
+      "weight": 60,
+      "setType": "myo-rep",
+      "rpe": 7,
+      "completedAt": "2026-03-13T16:56:10.670Z"
+    },
+    {
+      "id": "1773420983830-8olnvmu3r",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-z0jv34ef",
+      "exerciseId": "1772563769035-o6j3q74t",
+      "setId": "1772563769035-el4m5k00",
+      "reps": 20,
+      "weight": 60,
+      "setType": "myo-rep",
+      "rpe": 8.5,
+      "completedAt": "2026-03-13T16:56:23.830Z"
+    },
+    {
+      "id": "1773420997067-xkn6pn7h0",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-z0jv34ef",
+      "exerciseId": "1772563769035-qscfksze",
+      "setId": "1772563769035-sk8semdy",
+      "reps": 42,
+      "weight": 7,
+      "setType": "myo-rep",
+      "rpe": 7,
+      "completedAt": "2026-03-13T16:56:37.067Z"
+    },
+    {
+      "id": "1773421010898-ui554skey",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-z0jv34ef",
+      "exerciseId": "1772563769035-qscfksze",
+      "setId": "1772563769035-ifcyemkk",
+      "reps": 22,
+      "weight": 7,
+      "setType": "myo-rep",
+      "rpe": 9,
+      "completedAt": "2026-03-13T16:56:50.898Z"
+    },
+    {
+      "id": "1773421026195-fstdfz0c1",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-z0jv34ef",
+      "exerciseId": "1772563769035-60pggfqa",
+      "setId": "1772563769035-hurwui1r",
+      "reps": 11,
+      "weight": 40,
+      "setType": "myo-rep",
+      "rpe": 7,
+      "completedAt": "2026-03-13T16:57:06.195Z"
+    },
+    {
+      "id": "1773421047743-70fsi8hn8",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-z0jv34ef",
+      "exerciseId": "1772563769035-60pggfqa",
+      "setId": "1772563769035-9sqk0qfy",
+      "reps": 20,
+      "weight": 40,
+      "setType": "myo-rep",
+      "rpe": 8.5,
+      "completedAt": "2026-03-13T16:57:27.743Z"
+    },
+    {
+      "id": "1773421516803-tgw3wq6e0",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-z0jv34ef",
+      "exerciseId": "1772563769035-aula4rwc",
+      "setId": "1772563769035-a5q3c257",
+      "reps": 0,
+      "weight": 0,
+      "duration": 60,
+      "setType": "myo-rep",
+      "rpe": 7,
+      "completedAt": "2026-03-13T17:05:16.803Z"
+    },
+    {
+      "id": "1773421617308-z5wu2lzic",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-z0jv34ef",
+      "exerciseId": "1772563769035-aula4rwc",
+      "setId": "1772563769035-eds2j44o",
+      "reps": 0,
+      "weight": 91,
+      "duration": 51,
+      "setType": "myo-rep",
+      "rpe": 7,
+      "completedAt": "2026-03-13T17:06:57.308Z"
+    },
+    {
+      "id": "1773421758721-s5h5qcrzs",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-z0jv34ef",
+      "exerciseId": "1772563769035-aula4rwc",
+      "setId": "1773421692919-j8eoiktui",
+      "reps": 0,
+      "weight": 0,
+      "duration": 50,
+      "setType": "myo-rep",
+      "rpe": 7,
+      "completedAt": "2026-03-13T17:09:18.721Z"
+    },
+    {
+      "id": "1773679562019-xeybgmuvp",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-fa7hpgaw",
+      "exerciseId": "1772563769035-ja2n900l",
+      "setId": "1772563769035-95xd6wvx",
+      "reps": 10,
+      "weight": 7,
+      "setType": "myo-rep",
+      "rpe": 9,
+      "completedAt": "2026-03-16T16:46:02.019Z"
+    },
+    {
+      "id": "1773680041494-7we0t1r6u",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-fa7hpgaw",
+      "exerciseId": "1772563769035-ja2n900l",
+      "setId": "1772563769035-98uiu9h8",
+      "reps": 29,
+      "weight": 7,
+      "setType": "myo-rep",
+      "rpe": 9,
+      "completedAt": "2026-03-16T16:54:01.494Z"
+    },
+    {
+      "id": "1773680533257-fndp0hri9",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-fa7hpgaw",
+      "exerciseId": "1772563769035-ja2n900l",
+      "setId": "1773680052015-96qmmghet",
+      "reps": 5,
+      "weight": 12,
+      "setType": "myo-rep",
+      "rpe": 7,
+      "completedAt": "2026-03-16T17:02:13.257Z"
+    },
+    {
+      "id": "1773680760960-blxalu45d",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-fa7hpgaw",
+      "exerciseId": "1772563769035-z9d7m8ys",
+      "setId": "1772563769035-nxnpdlzp",
+      "reps": 13,
+      "weight": 23,
+      "setType": "myo-rep",
+      "rpe": 7,
+      "completedAt": "2026-03-16T17:06:00.960Z"
+    },
+    {
+      "id": "1773680911237-gvlr3kqcb",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-fa7hpgaw",
+      "exerciseId": "1772563769035-z9d7m8ys",
+      "setId": "1772563769035-i1mqjqd4",
+      "reps": 22,
+      "weight": 23,
+      "setType": "myo-rep",
+      "rpe": 7,
+      "completedAt": "2026-03-16T17:08:31.237Z"
+    },
+    {
+      "id": "1773681070219-kxruufxd5",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-fa7hpgaw",
+      "exerciseId": "1772563769035-mjse20y7",
+      "setId": "1772563769035-w41royv6",
+      "reps": 14,
+      "weight": 59,
+      "setType": "myo-rep",
+      "rpe": 7,
+      "completedAt": "2026-03-16T17:11:10.219Z"
+    },
+    {
+      "id": "1773681232309-coda41nqf",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-fa7hpgaw",
+      "exerciseId": "1772563769035-mjse20y7",
+      "setId": "1772563769035-5sctn8it",
+      "reps": 25,
+      "weight": 59,
+      "setType": "myo-rep",
+      "rpe": 7.5,
+      "completedAt": "2026-03-16T17:13:52.309Z"
+    },
+    {
+      "id": "1773681650104-yz4zdoge5",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-fa7hpgaw",
+      "exerciseId": "1772563769035-vq8kh5w2",
+      "setId": "1772563769035-b9c6m3n5",
+      "reps": 0,
+      "weight": 0,
+      "duration": 20,
+      "setType": "myo-rep",
+      "rpe": 7,
+      "completedAt": "2026-03-16T17:20:50.104Z"
+    },
+    {
+      "id": "1773681712413-t9rrpepfk",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-fa7hpgaw",
+      "exerciseId": "1772563769035-vq8kh5w2",
+      "setId": "1772563769035-kg7b5kc6",
+      "reps": 0,
+      "weight": 0,
+      "duration": 15,
+      "setType": "myo-rep",
+      "rpe": 7,
+      "completedAt": "2026-03-16T17:21:52.413Z"
+    },
+    {
+      "id": "1773681775878-j22s63fr3",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-fa7hpgaw",
+      "exerciseId": "1772563769035-vq8kh5w2",
+      "setId": "1773406878613-e0byp3ojn",
+      "reps": 0,
+      "weight": 0,
+      "duration": 20,
+      "setType": "myo-rep",
+      "rpe": 7,
+      "completedAt": "2026-03-16T17:22:55.878Z"
+    },
+    {
+      "id": "1773681902594-lxts0ovah",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-fa7hpgaw",
+      "exerciseId": "1773590151089-cojeqd8ui",
+      "setId": "1773590151089-6uix7vtrp",
+      "reps": 4,
+      "weight": 0,
+      "setType": "force",
+      "rpe": 7,
+      "completedAt": "2026-03-16T17:25:02.594Z"
+    },
+    {
+      "id": "1773681942860-ie89qvrej",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-fa7hpgaw",
+      "exerciseId": "1773590151089-cojeqd8ui",
+      "setId": "1773590151089-wc3sezt5e",
+      "reps": 3,
+      "weight": 0,
+      "setType": "myo-rep",
+      "rpe": 7,
+      "completedAt": "2026-03-16T17:25:42.860Z"
+    },
+    {
+      "id": "1773682000757-hbsqpgtok",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-fa7hpgaw",
+      "exerciseId": "1773590151089-cojeqd8ui",
+      "setId": "1773590414203-dlze6887d",
+      "reps": 3,
+      "weight": 0,
+      "setType": "force",
+      "rpe": 7,
+      "completedAt": "2026-03-16T17:26:40.757Z"
+    },
+    {
+      "id": "1773853745892-i1f51mgr7",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-jmfyvxts",
+      "exerciseId": "1772563769035-uztzllip",
+      "setId": "1772563769035-0o1xmhy2",
+      "reps": 3,
+      "weight": 5,
+      "setType": "myo-rep",
+      "rpe": 7,
+      "completedAt": "2026-03-18T17:09:05.892Z"
+    },
+    {
+      "id": "1773853823857-ug36lttwc",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-jmfyvxts",
+      "exerciseId": "1772563769035-uztzllip",
+      "setId": "1772563769035-23ppn2vr",
+      "reps": 3,
+      "weight": 0,
+      "setType": "myo-rep",
+      "rpe": 7,
+      "completedAt": "2026-03-18T17:10:23.857Z"
+    },
+    {
+      "id": "1773854683169-i5n3x3wbp",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-jmfyvxts",
+      "exerciseId": "1772563769035-f0izkvri",
+      "setId": "1772563769035-dh3tc8l7",
+      "reps": 17,
+      "weight": 36,
+      "setType": "myo-rep",
+      "rpe": 7,
+      "completedAt": "2026-03-18T17:24:43.169Z"
+    },
+    {
+      "id": "1773854810315-rp1ggejbu",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-jmfyvxts",
+      "exerciseId": "1772563769035-f0izkvri",
+      "setId": "1772563769035-4j2ks6ma",
+      "reps": 21,
+      "weight": 36,
+      "setType": "myo-rep",
+      "rpe": 7.5,
+      "completedAt": "2026-03-18T17:26:50.315Z"
+    },
+    {
+      "id": "1773855422267-qasjm79t0",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-jmfyvxts",
+      "exerciseId": "1772563769035-3rymuzr4",
+      "setId": "1772563769035-3wikw6dt",
+      "reps": 13,
+      "weight": 80,
+      "setType": "myo-rep",
+      "rpe": 8,
+      "completedAt": "2026-03-18T17:37:02.267Z"
+    },
+    {
+      "id": "1773855610496-y9gqj2q71",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-jmfyvxts",
+      "exerciseId": "1772563769035-uztzllip",
+      "setId": "1772563769035-0o1xmhy2",
+      "reps": 3,
+      "weight": 5,
+      "setType": "myo-rep",
+      "rpe": 7,
+      "completedAt": "2026-03-18T17:40:10.496Z"
+    },
+    {
+      "id": "1773855612969-ci8di0iy8",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-jmfyvxts",
+      "exerciseId": "1772563769035-uztzllip",
+      "setId": "1772563769035-23ppn2vr",
+      "reps": 3,
+      "weight": 0,
+      "setType": "myo-rep",
+      "rpe": 7,
+      "completedAt": "2026-03-18T17:40:12.969Z"
+    },
+    {
+      "id": "1773855624299-p412tv05k",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-jmfyvxts",
+      "exerciseId": "1772563769035-f0izkvri",
+      "setId": "1772563769035-dh3tc8l7",
+      "reps": 17,
+      "weight": 36,
+      "setType": "myo-rep",
+      "rpe": 7,
+      "completedAt": "2026-03-18T17:40:24.299Z"
+    },
+    {
+      "id": "1773855626528-8r10iu19k",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-jmfyvxts",
+      "exerciseId": "1772563769035-f0izkvri",
+      "setId": "1772563769035-4j2ks6ma",
+      "reps": 21,
+      "weight": 36,
+      "setType": "myo-rep",
+      "rpe": 7,
+      "completedAt": "2026-03-18T17:40:26.528Z"
+    },
+    {
+      "id": "1773855633197-n1kctbms5",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-jmfyvxts",
+      "exerciseId": "1772563769035-3rymuzr4",
+      "setId": "1772563769035-3wikw6dt",
+      "reps": 13,
+      "weight": 80,
+      "setType": "myo-rep",
+      "rpe": 7,
+      "completedAt": "2026-03-18T17:40:33.197Z"
+    },
+    {
+      "id": "1773855833133-9xbo28b6k",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-jmfyvxts",
+      "exerciseId": "1772563769035-3rymuzr4",
+      "setId": "1772563769035-e5vl6jll",
+      "reps": 23,
+      "weight": 80,
+      "setType": "myo-rep",
+      "rpe": 7,
+      "completedAt": "2026-03-18T17:43:53.133Z"
+    },
+    {
+      "id": "1773856163177-chi7d0aq7",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-jmfyvxts",
+      "exerciseId": "1773401192320-wsyq1rmcv",
+      "setId": "1773398861328-d2hatimv5",
+      "reps": 18,
+      "weight": 14,
+      "setType": "myo-rep",
+      "rpe": 7,
+      "completedAt": "2026-03-18T17:49:23.177Z"
+    },
+    {
+      "id": "1773856448854-bq3cez2yn",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-jmfyvxts",
+      "exerciseId": "1773401192320-wsyq1rmcv",
+      "setId": "1773398861328-45c953oar",
+      "reps": 20,
+      "weight": 14,
+      "setType": "myo-rep",
+      "rpe": 7,
+      "completedAt": "2026-03-18T17:54:08.854Z"
+    }
+  ],
+  "activeWorkout": {
+    "programId": "1772563769035-edyu9wse",
+    "sessionId": "1772563769035-jmfyvxts",
+    "startedAt": "2026-03-18T17:08:12.386Z",
+    "currentExerciseIndex": 2,
+    "completedSets": {
+      "1772563769035-uztzllip-1772563769035-0o1xmhy2": {
+        "id": "1772563769035-0o1xmhy2",
+        "type": "myo-rep",
+        "targetReps": 3,
+        "targetWeight": 5,
+        "isCompleted": true,
+        "completedWeight": 5,
+        "completedReps": 3,
+        "rpe": 7
+      },
+      "1772563769035-uztzllip-1772563769035-23ppn2vr": {
+        "id": "1772563769035-23ppn2vr",
+        "type": "myo-rep",
+        "targetReps": 3,
+        "targetWeight": 5,
+        "isCompleted": true,
+        "completedWeight": 0,
+        "completedReps": 3,
+        "rpe": 7
+      },
+      "1772563769035-f0izkvri-1772563769035-dh3tc8l7": {
+        "id": "1772563769035-dh3tc8l7",
+        "type": "myo-rep",
+        "targetReps": 14,
+        "targetWeight": 93,
+        "isCompleted": true,
+        "completedWeight": 36,
+        "completedReps": 17,
+        "rpe": 7
+      },
+      "1772563769035-f0izkvri-1772563769035-4j2ks6ma": {
+        "id": "1772563769035-4j2ks6ma",
+        "type": "myo-rep",
+        "targetReps": 24,
+        "targetWeight": 93,
+        "isCompleted": true,
+        "completedWeight": 36,
+        "completedReps": 21,
+        "rpe": 7
+      },
+      "1772563769035-3rymuzr4-1772563769035-3wikw6dt": {
+        "id": "1772563769035-3wikw6dt",
+        "type": "myo-rep",
+        "targetReps": 4,
+        "targetWeight": 120,
+        "isCompleted": true,
+        "completedWeight": 80,
+        "completedReps": 13,
+        "rpe": 7
+      },
+      "1772563769035-3rymuzr4-1772563769035-e5vl6jll": {
+        "id": "1772563769035-e5vl6jll",
+        "type": "myo-rep",
+        "targetReps": 5,
+        "targetWeight": 120,
+        "isCompleted": true,
+        "completedWeight": 80,
+        "completedReps": 23,
+        "rpe": 7
+      },
+      "1773401192320-wsyq1rmcv-1773398861328-d2hatimv5": {
+        "id": "1773398861328-d2hatimv5",
+        "type": "myo-rep",
+        "targetReps": 14,
+        "targetWeight": 20,
+        "isCompleted": true,
+        "completedReps": 18,
+        "completedWeight": 14,
+        "rpe": 7
+      },
+      "1773401192320-wsyq1rmcv-1773398861328-45c953oar": {
+        "id": "1773398861328-45c953oar",
+        "type": "myo-rep",
+        "targetReps": 14,
+        "targetWeight": 20,
+        "isCompleted": true,
+        "completedWeight": 14,
+        "completedReps": 20,
+        "rpe": 7
+      }
+    },
+    "activeRotations": {
+      "triceps": "1772563769035-e3qm1d2h",
+      "1773398831384-0ivltqjja": "1773398887137-6eclaknau"
+    }
+  }
+}

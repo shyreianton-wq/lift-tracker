@@ -312,7 +312,7 @@ export default function TrainingSession() {
     // Always pass exercise name so replaced exercises can match by name
     // Pass setIndex so predictions match the correct set number
     const perf = getLastPerformance(program.id, session.id, resolvedId, setId, undefined, exercise.name, setIndex);
-    return perf ? { reps: perf.reps, weight: perf.weight, rpe: perf.rpe, duration: perf.duration, myoRestPauseCount: perf.myoRestPauseCount } : undefined;
+    return perf ? { reps: perf.reps, weight: perf.weight, rpe: perf.rpe, duration: perf.duration } : undefined;
   };
 
   const exProgression = activeExercise ? computeProgression(activeExercise) : null;

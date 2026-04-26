@@ -1,7 +1,8 @@
 import { motion } from 'framer-motion';
 import { Session } from '@/types/workout';
-import { Play, Dumbbell, ChevronRight, Edit, Trash2 } from 'lucide-react';
+import { Play, Dumbbell, Edit, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 
 interface SessionCardProps {
   session: Session;
@@ -18,6 +19,29 @@ export function SessionCard({ session, index, onStart, onEdit, onDelete, onClick
     0
   );
 
+  const getSessionTypeBadge = () => {
+    if (!session.type) return null;
+    if (session.type === 'myo-rep') {
+      return (
+        <Badge variant="secondary" className="text-[10px] px-1.5 bg-orange-500/20 text-orange-400">
+          MYO
+        </Badge>
+      );
+    }
+    if (session.type === 'hypertrophie') {
+      return (
+        <Badge variant="secondary" className="text-[10px] px-1.5 bg-blue-500/20 text-blue-400">
+          HYP
+        </Badge>
+      );
+    }
+    return (
+      <Badge variant="secondary" className="text-[10px] px-1.5 bg-green-500/20 text-green-400">
+        FORCE
+      </Badge>
+    );
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, x: -20 }}
@@ -32,7 +56,10 @@ export function SessionCard({ session, index, onStart, onEdit, onDelete, onClick
             {index + 1}
           </div>
           <div>
-            <h4 className="font-semibold text-foreground">{session.name}</h4>
+            <div className="flex items-center gap-2">
+              <h4 className="font-semibold text-foreground">{session.name}</h4>
+              {getSessionTypeBadge()}
+            </div>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Dumbbell className="h-3 w-3" />
               <span>{session.exercises.length} exercices</span>
@@ -82,7 +109,6 @@ export function SessionCard({ session, index, onStart, onEdit, onDelete, onClick
               <Trash2 className="h-4 w-4" />
             </Button>
           )}
-          <ChevronRight className="h-5 w-5 text-muted-foreground" />
         </div>
       </div>
     </motion.div>
