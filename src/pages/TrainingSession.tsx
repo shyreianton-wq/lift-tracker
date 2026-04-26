@@ -471,14 +471,14 @@ export default function TrainingSession() {
               return (
                 <button key={set.id}
                   onClick={() => {
-                    if (isDone) setEditingSetId(isEditing ? null : set.id);
+                    setEditingSetId(isEditing ? null : set.id);
                   }}
                   className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all ${
                     isEditing ? 'bg-primary/20 text-primary ring-2 ring-primary/40'
                       : isDone ? 'bg-success/20 text-success' 
                       : isActive ? 'bg-primary/20 text-primary ring-2 ring-primary/40'
                       : 'bg-secondary/50 text-muted-foreground'
-                  } ${isDone ? 'cursor-pointer hover:ring-2 hover:ring-success/40' : ''}`}
+                  } cursor-pointer hover:ring-2 hover:ring-primary/40`}
                 >
                   {isDone ? (
                     activeExercise.mode === 'time'

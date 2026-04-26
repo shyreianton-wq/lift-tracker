@@ -3794,114 +3794,21 @@
       "rpe": 7,
       "completedAt": "2026-04-26T21:06:17.795Z",
       "setIndex": 2
+    },
+    {
+      "id": "1777240456649-gxfoi6hlp",
+      "programId": "1772563769035-edyu9wse",
+      "sessionId": "1772563769035-fa7hpgaw",
+      "exerciseId": "1772563769035-mjse20y7",
+      "exerciseName": "Horizontal Pull Close Neutral Grip",
+      "setId": "1772563769035-5sctn8it",
+      "reps": 25,
+      "weight": 66,
+      "setType": "myo-rep",
+      "rpe": 7,
+      "completedAt": "2026-04-26T21:54:16.649Z",
+      "setIndex": 2
     }
   ],
-  "activeWorkout": {
-    "programId": "1772563769035-edyu9wse",
-    "sessionId": "1772563769035-fa7hpgaw",
-    "startedAt": "2026-04-26T20:18:17.925Z",
-    "currentExerciseIndex": 0,
-    "completedSets": {
-      "1772563769035-ja2n900l-1772563769035-95xd6wvx": {
-        "id": "1772563769035-95xd6wvx",
-        "type": "myo-rep",
-        "targetReps": 4,
-        "targetWeight": 32,
-        "isCompleted": true,
-        "completedWeight": 7,
-        "completedReps": 12,
-        "rpe": 7
-      },
-      "1772563769035-ja2n900l-1772563769035-98uiu9h8": {
-        "id": "1772563769035-98uiu9h8",
-        "type": "myo-rep",
-        "targetReps": 4,
-        "targetWeight": 32,
-        "isCompleted": true,
-        "myoRestPauseCount": 10,
-        "rpe": 10,
-        "completedReps": 30,
-        "completedWeight": 7
-      },
-      "1772563769035-ja2n900l-1773680052015-96qmmghet": {
-        "id": "1773680052015-96qmmghet",
-        "type": "myo-rep",
-        "targetReps": 4,
-        "targetWeight": 32,
-        "isCompleted": true,
-        "completedWeight": 16,
-        "myoRestPauseCount": 5,
-        "rpe": 7.5,
-        "completedReps": 5
-      },
-      "1772563769035-z9d7m8ys-1772563769035-nxnpdlzp": {
-        "id": "1772563769035-nxnpdlzp",
-        "type": "myo-rep",
-        "targetReps": 5,
-        "targetWeight": 36,
-        "isCompleted": true,
-        "completedReps": 13,
-        "completedWeight": 27,
-        "rpe": 7
-      },
-      "1772563769035-z9d7m8ys-1772563769035-i1mqjqd4": {
-        "id": "1772563769035-i1mqjqd4",
-        "type": "myo-rep",
-        "targetReps": 4,
-        "targetWeight": 36,
-        "isCompleted": true,
-        "myoRestPauseCount": 4,
-        "rpe": 7.5,
-        "completedReps": 22,
-        "completedWeight": 27
-      },
-      "1772563769035-mjse20y7-1772563769035-w41royv6": {
-        "id": "1772563769035-w41royv6",
-        "type": "myo-rep",
-        "targetReps": 6,
-        "targetWeight": 120,
-        "isCompleted": true,
-        "completedWeight": 66,
-        "completedReps": 14,
-        "rpe": 7
-      },
-      "1772563769035-mjse20y7-1772563769035-5sctn8it": {
-        "id": "1772563769035-5sctn8it",
-        "type": "myo-rep",
-        "targetReps": 5,
-        "targetWeight": 120,
-        "isCompleted": true,
-        "completedReps": 25,
-        "myoRestPauseCount": 4,
-        "rpe": 7.5,
-        "completedWeight": 66
-      },
-      "1772563769035-vq8kh5w2-1772563769035-b9c6m3n5": {
-        "id": "1772563769035-b9c6m3n5",
-        "type": "myo-rep",
-        "targetReps": 4,
-        "targetWeight": 0,
-        "isCompleted": true,
-        "rpe": 7.5,
-        "completedDuration": 10,
-        "completedWeight": 0,
-        "completedReps": 0
-      },
-      "1772563769035-vq8kh5w2-1772563769035-kg7b5kc6": {
-        "id": "1772563769035-kg7b5kc6",
-        "type": "myo-rep",
-        "targetReps": 9,
-        "targetWeight": 0,
-        "isCompleted": true,
-        "completedDuration": 10,
-        "completedWeight": 0,
-        "completedReps": 0,
-        "rpe": 7
-      }
-    },
-    "activeRotations": {
-      "triceps": "1772563769035-e3qm1d2h",
-      "1773398831384-0ivltqjja": "1773398861328-4dem5pjzk"
-    }
-  }
+  "activeWorkout": null
 }
