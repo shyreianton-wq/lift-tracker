@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { useWorkout } from '@/contexts/WorkoutContext';
-import { ArrowLeft, TrendingUp, TrendingDown, Calendar, Dumbbell, BarChart3, Timer, Trophy, Flame, Minus, ChevronDown, ChevronUp, Bot } from 'lucide-react';
+import { ArrowLeft, TrendingUp, TrendingDown, Calendar, Dumbbell, BarChart3, Timer, Trophy, Flame, Minus, ChevronDown, ChevronUp } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';

@@ -3,7 +3,7 @@ import { useUser } from "@/hooks/useUser";
 import { useWorkout } from "@/contexts/WorkoutContext";
 import { ProgramCard } from "@/components/ProgramCard";
 import { Button } from "@/components/ui/button";
-import { Plus, Dumbbell, BarChart3, Users, Bot, Sparkles } from "lucide-react";
+import { Plus, Dumbbell, BarChart3, Users } from "lucide-react";
 import { useState, useEffect } from "react";
 import { CreateProgramModal } from "@/components/CreateProgramModal";
 import { Program } from "@/types/workout";
@@ -125,13 +125,6 @@ export default function Dashboard() {
 
               <div className="flex items-center gap-2">
                 <Button
-                  onClick={() => navigate("/coach")}
-                  variant="outline"
-                  className="h-11 px-4"
-                >
-                  <Bot className="h-5 w-5" />
-                </Button>
-                <Button
                   onClick={() => navigate("/history")}
                   className="h-11 px-5 btn-primary-gradient glow-primary font-semibold"
                 >
@@ -153,27 +146,17 @@ export default function Dashboard() {
           <section>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold text-foreground">Mes programmes</h2>
-              <div className="flex gap-2">
-                <Button
-                  onClick={() => navigate('/ai-builder')}
-                  size="sm"
-                  className="btn-primary-gradient glow-primary"
-                >
-                  <Sparkles className="h-4 w-4 mr-1" />
-                  Créer
-                </Button>
-                <Button
-                  onClick={() => {
-                    setEditingProgram(undefined);
-                    setShowCreateModal(true);
-                  }}
-                  variant="outline"
-                  size="sm"
-                >
-                  <Plus className="h-4 w-4 mr-1" />
-                  Nouveau
-                </Button>
-              </div>
+              <Button
+                onClick={() => {
+                  setEditingProgram(undefined);
+                  setShowCreateModal(true);
+                }}
+                size="sm"
+                className="btn-primary-gradient glow-primary"
+              >
+                <Plus className="h-4 w-4 mr-1" />
+                Nouveau
+              </Button>
             </div>
 
             {programs.length === 0 ? (
