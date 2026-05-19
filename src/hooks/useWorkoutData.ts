@@ -129,24 +129,39 @@ export function useWorkoutData() {
 
   useEffect(() => {
     async function loadData() {
+      // Try server first
+      let serverData: any = null;
       try {
-        const response = await fetch(`${API_URL}/api/data`, {
-          credentials: 'include'
-        });
-        if (response.ok) {
-          const data = await response.json();
-          setPrograms(data.programs || []);
-          setHistory(data.history || []);
-          setActiveWorkout(data.activeWorkout || null);
-        }
+        const response = await fetch(`${API_URL}/api/data`, { credentials: 'include' });
+        if (response.ok) serverData = await response.json();
       } catch (error) {
         console.error('Failed to load data from server:', error);
-        const savedPrograms = localStorage.getItem('workout_programs');
-        const savedHistory = localStorage.getItem('workout_history');
-        const savedActiveWorkout = localStorage.getItem('active_workout');
-        if (savedPrograms) setPrograms(JSON.parse(savedPrograms));
-        if (savedHistory) setHistory(JSON.parse(savedHistory));
-        if (savedActiveWorkout) setActiveWorkout(JSON.parse(savedActiveWorkout));
+      }
+      // Read local snapshot (offline-safe fallback / mid-session backup)
+      let localData: any = null;
+      try {
+        const raw = localStorage.getItem('lift_data_snapshot');
+        if (raw) localData = JSON.parse(raw);
+      } catch { /* ignore */ }
+
+      // Decide which source wins
+      const serverTs = serverData?.lastSavedAt ? new Date(serverData.lastSavedAt).getTime() : 0;
+      const localTs = localData?.lastSavedAt ? new Date(localData.lastSavedAt).getTime() : 0;
+      const chosen = (!serverData && localData) || (localData && localTs > serverTs) ? localData : serverData;
+
+      if (chosen) {
+        setPrograms(chosen.programs || []);
+        setHistory(chosen.history || []);
+        setActiveWorkout(chosen.activeWorkout || null);
+        // If local was more recent than server, push it back so server catches up
+        if (chosen === localData && serverData && localTs > serverTs) {
+          fetch(`${API_URL}/api/data`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify(chosen),
+          }).catch(() => {});
+        }
       }
       setIsLoaded(true);
     }
@@ -154,12 +169,15 @@ export function useWorkoutData() {
   }, []);
 
   const saveToServer = useCallback(async (data: { programs: Program[]; history: WorkoutHistory[]; activeWorkout: ActiveWorkout | null }) => {
+    const stamped = { ...data, lastSavedAt: new Date().toISOString() };
+    // Always write-through localStorage first (survives network failure / Safari kill)
+    try { localStorage.setItem('lift_data_snapshot', JSON.stringify(stamped)); } catch { /* quota */ }
     try {
       await fetch(`${API_URL}/api/data`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify(data),
+        body: JSON.stringify(stamped),
       });
     } catch (error) {
       console.error('Failed to save data to server:', error);
@@ -255,77 +273,63 @@ export function useWorkoutData() {
     exerciseName?: string,
     setIndex?: number
   ): WorkoutHistory | undefined => {
-    // Exclude entries from the current active session to avoid comparing with sets just completed
+    // Exclude entries from the current active session
     const cutoff = activeWorkout?.startedAt ? new Date(activeWorkout.startedAt).getTime() : null;
     const filtered = cutoff
       ? history.filter(h => new Date(h.completedAt).getTime() < cutoff)
       : history;
 
-    // Try exact match first
-    const exact = filtered
-      .filter(h =>
-        h.programId === programId &&
-        h.exerciseId === exerciseId &&
-        h.setId === setId &&
-        (!exerciseName || !h.exerciseName || h.exerciseName === exerciseName) &&
-        (!setType || (h.setType || "force") === setType)
-      )
-      .sort((a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime())[0];
-    if (exact) return exact;
-
-    // For rotation exercises or replaced exercises: match by name (cross-session, any program)
+    // Prefer name when provided: if any entries have this exerciseName, use ONLY those.
+    // Fall back to exerciseId only for legacy entries that have no exerciseName recorded.
+    // This prevents a replaced/new slot from inheriting the old slot's history via shared id.
+    let candidates: WorkoutHistory[];
     if (exerciseName) {
-      // Try same program + same setIndex first (most accurate prediction)
-      if (setIndex != null) {
-        const sameProgIdx = filtered
-          .filter(h =>
-            h.programId === programId &&
-            h.exerciseName === exerciseName &&
-            h.setIndex === setIndex &&
-            (!setType || (h.setType || "force") === setType)
-          )
-          .sort((a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime())[0];
-        if (sameProgIdx) return sameProgIdx;
+      const byName = filtered.filter(h => h.exerciseName === exerciseName);
+      if (byName.length > 0) {
+        candidates = byName;
+      } else {
+        // legacy fallback: entries with no name at all, matched by id
+        candidates = filtered.filter(h => !h.exerciseName && h.exerciseId === exerciseId);
       }
+    } else {
+      candidates = filtered.filter(h => h.exerciseId === exerciseId);
+    }
+    if (candidates.length === 0) return undefined;
 
-      // Same program, any set index
-      const sameProg = filtered
-        .filter(h =>
-          h.programId === programId &&
-          h.exerciseName === exerciseName &&
-          (!setType || (h.setType || "force") === setType)
-        )
-        .sort((a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime())[0];
-      if (sameProg) return sameProg;
+    // Prefer entries matching the requested setType; if none, fall back to all entries
+    // (covers historical mistags like force-logged-as-myo-rep).
+    const sameType = setType
+      ? candidates.filter(h => (h.setType || "force") === setType)
+      : candidates;
+    const pool = sameType.length > 0 ? sameType : candidates;
 
-      // Cross-program fallback: prefer matching setIndex
-      if (setIndex != null) {
-        const crossIdx = filtered
-          .filter(h =>
-            h.exerciseName === exerciseName &&
-            h.setIndex === setIndex &&
-            (!setType || (h.setType || "force") === setType)
-          )
-          .sort((a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime())[0];
-        if (crossIdx) return crossIdx;
-      }
+    // Sort by date desc
+    const sorted = [...pool].sort((a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime());
+    if (setIndex == null) return sorted[0];
 
-      // Cross-program, any set index
-      return filtered
-        .filter(h =>
-          h.exerciseName === exerciseName &&
-          (!setType || (h.setType || "force") === setType)
-        )
-        .sort((a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime())[0];
+    // Group entries from the same session as mostRecent (within 4h + same sessionId)
+    const mostRecent = sorted[0];
+    const mostRecentTime = new Date(mostRecent.completedAt).getTime();
+    const sessionWindow = 4 * 60 * 60 * 1000;
+    const lastSessionEntries = sorted.filter(h =>
+      mostRecentTime - new Date(h.completedAt).getTime() < sessionWindow &&
+      h.sessionId === mostRecent.sessionId
+    );
+
+    // Match by setIndex inside the last session
+    if (lastSessionEntries.some(h => h.setIndex != null)) {
+      const match = lastSessionEntries.find(h => h.setIndex === setIndex);
+      if (match) return match;
+      const bySI = [...lastSessionEntries].sort((a, b) => (b.setIndex ?? 0) - (a.setIndex ?? 0));
+      return bySI[0];
     }
 
-    // Ultimate fallback: try exerciseId across any program
-    const anyProgram = filtered
-      .filter(h => h.exerciseId === exerciseId)
-      .sort((a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime())[0];
-    if (anyProgram) return anyProgram;
-
-    return undefined;
+    // No setIndex in history: infer by chronological order
+    const chronological = [...lastSessionEntries].sort((a, b) =>
+      new Date(a.completedAt).getTime() - new Date(b.completedAt).getTime()
+    );
+    const idx = setIndex - 1;
+    return chronological[idx] ?? chronological[chronological.length - 1];
   }, [history, activeWorkout]);
 
   // Check if an exercise should be shown (considering legacy rotation)

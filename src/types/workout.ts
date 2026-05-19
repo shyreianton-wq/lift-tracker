@@ -95,4 +95,8 @@ export interface ActiveWorkout {
   currentExerciseIndex: number;
   completedSets: Record<string, WorkoutSet>;
   activeRotations?: Record<string, string>; // groupId -> active exerciseId
+  // In-session edits (cleared when the workout ends via setActiveWorkout(null))
+  exerciseOverrides?: Record<string, { name: string; historyId?: string }>;
+  addedExercises?: Exercise[];
+  addedSets?: Record<string, WorkoutSet[]>;
 }

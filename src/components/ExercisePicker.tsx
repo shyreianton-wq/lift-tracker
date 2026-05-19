@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 interface ExercisePickerProps {
   open: boolean;
   onClose: () => void;
-  onSelect: (name: string) => void;
+  onSelect: (name: string, isNew: boolean) => void;
   allExerciseNames: string[];
   currentName?: string;
 }
@@ -76,7 +76,7 @@ export function ExercisePicker({ open, onClose, onSelect, allExerciseNames, curr
           <div className="flex-1 overflow-y-auto p-2">
             {showCustom && (
               <button
-                onClick={() => { onSelect(query.trim()); onClose(); }}
+                onClick={() => { onSelect(query.trim(), true); onClose(); }}
                 className="w-full text-left px-3 py-2.5 rounded-lg bg-primary/10 hover:bg-primary/20 transition-colors mb-1"
               >
                 <span className="text-sm font-medium text-primary">+ Créer « {query.trim()} »</span>
@@ -85,7 +85,7 @@ export function ExercisePicker({ open, onClose, onSelect, allExerciseNames, curr
             {filtered.map(name => (
               <button
                 key={name}
-                onClick={() => { onSelect(name); onClose(); }}
+                onClick={() => { onSelect(name, false); onClose(); }}
                 className={`w-full text-left px-3 py-2.5 rounded-lg hover:bg-secondary/50 transition-colors ${
                   name === currentName ? 'bg-secondary/30 text-foreground font-medium' : 'text-muted-foreground'
                 }`}

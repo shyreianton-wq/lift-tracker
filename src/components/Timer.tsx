@@ -73,8 +73,8 @@ export function Timer({ onComplete, onStart, className = '', initialDuration = 9
               layout
               className="relative"
               animate={{
-                width: isRunning ? 120 : 48,
-                height: isRunning ? 120 : 48,
+                width: isRunning ? 180 : 48,
+                height: isRunning ? 180 : 48,
               }}
               transition={{ duration: 0.35, ease: 'easeInOut' }}
             >
@@ -97,7 +97,7 @@ export function Timer({ onComplete, onStart, className = '', initialDuration = 9
               <div className="absolute inset-0 flex items-center justify-center">
                 <motion.span
                   className={`font-bold tabular-nums ${isUrgent ? 'text-destructive' : 'text-foreground'}`}
-                  animate={{ fontSize: isRunning ? '2.5rem' : '0.875rem' }}
+                  animate={{ fontSize: isRunning ? '3.5rem' : '0.875rem' }}
                   transition={{ duration: 0.35 }}
                   style={{ lineHeight: 1 }}
                 >

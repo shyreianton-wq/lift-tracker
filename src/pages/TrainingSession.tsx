@@ -18,7 +18,7 @@ interface NavStep {
 export default function TrainingSession() {
   const { programId, sessionId } = useParams();
   const navigate = useNavigate();
-  const { programs, history, activeWorkout, completeSet, endWorkout, getLastPerformance, updateProgram, resolveExercises } = useWorkout();
+  const { programs, history, activeWorkout, completeSet, endWorkout, getLastPerformance, updateProgram, resolveExercises, updateActiveWorkout } = useWorkout();
 
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [exerciseSets, setExerciseSets] = useState<Record<string, Record<string, WorkoutSet>>>({});
@@ -29,9 +29,10 @@ export default function TrainingSession() {
   const [showTimerOverlay, setShowTimerOverlay] = useState(false);
   const [showExerciseList, setShowExerciseList] = useState(false);
   const [showExercisePicker, setShowExercisePicker] = useState<string | null>(null); // exerciseId or 'new'
-  const [exerciseOverrides, setExerciseOverrides] = useState<Record<string, { name: string; historyId?: string }>>({});
-  const [addedExercises, setAddedExercises] = useState<Exercise[]>([]);
-  const [addedSets, setAddedSets] = useState<Record<string, WorkoutSet[]>>({});
+  // Persisted in activeWorkout (survives refresh/lock-screen, cleared on endWorkout)
+  const exerciseOverrides = activeWorkout?.exerciseOverrides || {};
+  const addedExercises = activeWorkout?.addedExercises || [];
+  const addedSets = activeWorkout?.addedSets || {};
   const [editingSetId, setEditingSetId] = useState<string | null>(null);
 
   const program = programs.find(p => p.id === programId);
@@ -125,9 +126,9 @@ export default function TrainingSession() {
     };
 
     for (const set of exercise.sets) {
-      const resolvedId = (exercise as any)._resolvedExerciseId || exercise.id;
+      const resolvedId = (exercise as any)._historyId || (exercise as any)._resolvedExerciseId || exercise.id;
       const setIdx = exercise.sets.indexOf(set) + 1;
-      const prev = getLastPerformance(program!.id, session!.id, resolvedId, set.id, undefined, exercise.name, setIdx);
+      const prev = getLastPerformance(program!.id, session!.id, resolvedId, set.id, set.type, exercise.name, setIdx);
       if (prev) {
         hasPrevious = true;
         previousTotal += computeScore(prev.weight, prev.reps, prev.rpe, prev.duration);
@@ -164,26 +165,33 @@ export default function TrainingSession() {
     return Array.from(names).sort((a, b) => a.localeCompare(b, 'fr'));
   }, [programs, history]);
 
-  // Handle exercise replacement — find the real ID of the replacement exercise
-  const handleReplaceExercise = (exerciseId: string, newName: string) => {
+  // Handle exercise replacement.
+  // historyId rules:
+  //   - isNew=true  → always a freshly minted id (brand-new exercise, no inheritance).
+  //   - isNew=false → use the program/rotationGroup exercise id if a real
+  //                   programmed exercise matches `newName`.
+  //                   If the name is only known via history (no real programmed
+  //                   exercise), also mint a fresh id so we don't fall back to
+  //                   the old slot id and contaminate the new performance series.
+  const handleReplaceExercise = (slotId: string, newName: string, isNew: boolean) => {
+    const freshId = () => `repl-${slotId}-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`;
     let historyId: string | undefined;
-    for (const p of programs) {
-      for (const s of p.sessions) {
-        const match = s.exercises.find(e => e.name === newName);
-        if (match) { historyId = match.id; break; }
+    if (!isNew) {
+      for (const p of programs) {
+        for (const s of p.sessions) {
+          const match = s.exercises.find(e => e.name === newName);
+          if (match) { historyId = match.id; break; }
+        }
+        if (historyId) break;
+        for (const rg of p.rotationGroups || []) {
+          const match = rg.exercises.find(e => e.name === newName);
+          if (match) { historyId = match.id; break; }
+        }
+        if (historyId) break;
       }
-      if (historyId) break;
-      for (const rg of p.rotationGroups || []) {
-        const match = rg.exercises.find(e => e.name === newName);
-        if (match) { historyId = match.id; break; }
-      }
-      if (historyId) break;
     }
-    if (!historyId) {
-      const histMatch = [...history].reverse().find(h => h.exerciseName === newName);
-      if (histMatch) historyId = histMatch.exerciseId;
-    }
-    setExerciseOverrides(prev => ({ ...prev, [exerciseId]: { name: newName, historyId } }));
+    if (!historyId) historyId = freshId();
+    updateActiveWorkout({ exerciseOverrides: { ...(activeWorkout?.exerciseOverrides || {}), [slotId]: { name: newName, historyId } } });
   };
 
   // Handle adding a set to an exercise
@@ -199,7 +207,8 @@ export default function TrainingSession() {
       targetDuration: lastSet?.targetDuration,
       isCompleted: false,
     };
-    setAddedSets(prev => ({ ...prev, [exerciseId]: [...(prev[exerciseId] || []), newSet] }));
+    const prev = activeWorkout?.addedSets || {};
+    updateActiveWorkout({ addedSets: { ...prev, [exerciseId]: [...(prev[exerciseId] || []), newSet] } });
   };
 
   // Handle adding a new exercise to the session
@@ -215,7 +224,7 @@ export default function TrainingSession() {
         { id: `s2-${Date.now()}`, type: setType, targetReps: 8, targetWeight: 0, isCompleted: false },
       ],
     };
-    setAddedExercises(prev => [...prev, newEx]);
+    updateActiveWorkout({ addedExercises: [...(activeWorkout?.addedExercises || []), newEx] });
   };
 
   if (!program || !session) {
@@ -238,12 +247,17 @@ export default function TrainingSession() {
 
   const handleExerciseUpdate = (updatedExercise: Exercise) => {
     if (!program || !session) return;
+    // Strip in-progress workout state from sets so it does not bleed into the program template
+    const cleanExercise = {
+      ...updatedExercise,
+      sets: updatedExercise.sets.map(({ isCompleted: _ic, completedReps: _cr, completedWeight: _cw, completedDuration: _cd, rpe: _rpe, myoRestPauseCount: _mrp, ...rest }) => ({ ...rest, isCompleted: false })),
+    };
     const updatedProgram = {
       ...program,
       sessions: program.sessions.map(s =>
         s.id !== session.id ? s : {
           ...s,
-          exercises: s.exercises.map(e => e.id !== updatedExercise.id ? e : updatedExercise),
+          exercises: s.exercises.map(e => e.id !== updatedExercise.id ? e : cleanExercise),
         }
       ),
     };
@@ -269,7 +283,7 @@ export default function TrainingSession() {
     const matchedExercise = exercises.find(ex => ex.id === exerciseId);
     const setIdx = matchedExercise ? matchedExercise.sets.findIndex(s => s.id === setId) + 1 : undefined;
     // Use the real exercise ID for history (important for replacements)
-    const historyExerciseId = (matchedExercise as any)?._historyId || exerciseId;
+    const historyExerciseId = (matchedExercise as any)?._historyId || (matchedExercise as any)?._resolvedExerciseId || exerciseId;
     completeSet(historyExerciseId, setId, set, exerciseName, setIdx);
 
     if (!currentStep) return;
@@ -308,11 +322,31 @@ export default function TrainingSession() {
   const goPrev = () => { if (currentStepIndex > 0) { setCurrentStepIndex(i => i - 1); setSupersetActiveIdx(0); } };
 
   const getLastPerfForExercise = (exercise: Exercise, setId: string, setIndex?: number) => {
-    const resolvedId = (exercise as any)._resolvedExerciseId || exercise.id;
-    // Always pass exercise name so replaced exercises can match by name
-    // Pass setIndex so predictions match the correct set number
-    const perf = getLastPerformance(program.id, session.id, resolvedId, setId, undefined, exercise.name, setIndex);
-    return perf ? { reps: perf.reps, weight: perf.weight, rpe: perf.rpe, duration: perf.duration, myoRestPauseCount: perf.myoRestPauseCount } : undefined;
+    const matchingSet = exercise.sets.find(s => s.id === setId);
+    const resolvedId = (exercise as any)._historyId || (exercise as any)._resolvedExerciseId || exercise.id;
+    const perf = getLastPerformance(program.id, session.id, resolvedId, setId, matchingSet?.type, exercise.name, setIndex);
+    return perf ? { reps: perf.reps, weight: perf.weight, rpe: perf.rpe, duration: perf.duration, myoRestPauseCount: perf.myoRestPauseCount, completedAt: perf.completedAt } : undefined;
+  };
+
+  // Compute personal best (max weight*reps) for an exercise + setType from history.
+  // Same rule as getLastPerformance: prefer entries matching exerciseName.
+  // Fall back to exerciseId only for legacy entries with no exerciseName, so a
+  // replaced/new exercise that reuses the slot id does NOT pick up the old PR.
+  const getPersonalBest = (exercise: Exercise, setType?: string) => {
+    const resolvedId = (exercise as any)._historyId || (exercise as any)._resolvedExerciseId || exercise.id;
+    const byName = history.filter(h => h.exerciseName === exercise.name);
+    const pool = byName.length > 0
+      ? byName
+      : history.filter(h => !h.exerciseName && h.exerciseId === resolvedId);
+    let best: { weight: number; reps: number; score: number } | undefined;
+    for (const h of pool) {
+      if (setType && (h.setType || 'force') !== setType) continue;
+      const w = h.weight || 0;
+      const r = h.reps || 0;
+      const score = w * r;
+      if (!best || score > best.score) best = { weight: w, reps: r, score };
+    }
+    return best;
   };
 
   const exProgression = activeExercise ? computeProgression(activeExercise) : null;
@@ -338,7 +372,7 @@ export default function TrainingSession() {
               className="flex items-center gap-1 px-2 py-1 rounded-full bg-primary/10 hover:bg-primary/20 transition-colors"
             >
               <span className="text-xs">⏱</span>
-              <span className="text-[10px] font-medium text-primary">{timerDuration}s</span>
+              <span className="text-xs font-medium text-primary">{timerDuration}s</span>
             </button>
             <div className="w-8 h-8 relative">
               <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
@@ -352,7 +386,7 @@ export default function TrainingSession() {
                   transition={{ duration: 0.3 }}
                 />
               </svg>
-              <span className="absolute inset-0 flex items-center justify-center text-[9px] font-bold">
+              <span className="absolute inset-0 flex items-center justify-center text-[11px] font-bold">
                 {Math.round(progress)}%
               </span>
             </div>
@@ -417,7 +451,7 @@ export default function TrainingSession() {
                         {activeExercise.sets[0]?.type === 'myo-rep' ? 'Myo' : activeExercise.sets[0]?.type === 'hypertrophie' ? 'Hyp' : 'Force'}
                       </button>
                     )}
-                    <span className="text-[10px] text-muted-foreground">
+                    <span className="text-xs text-muted-foreground">
                       {activeExercise.sets.filter(s => s.isCompleted).length}/{activeExercise.sets.length}
                     </span>
                   </>
@@ -455,7 +489,7 @@ export default function TrainingSession() {
           <div className="flex items-center justify-center gap-2 mb-3">
             <Zap className="h-3 w-3 text-purple-400" />
             <span className="text-xs text-purple-400 font-medium">Superset</span>
-            <span className="text-[10px] text-muted-foreground">
+            <span className="text-xs text-muted-foreground">
               {supersetActiveIdx === 0 ? currentStep.exercises[1]?.name : currentStep.exercises[0]?.name} ensuite
             </span>
           </div>
@@ -519,6 +553,7 @@ export default function TrainingSession() {
                 exerciseMode={activeExercise.mode}
                 isActive={true}
                 lastPerformance={getLastPerfForExercise(activeExercise, editSet.id, editIdx + 1)}
+                personalBest={getPersonalBest(activeExercise, editSet.type)}
                 onUpdate={(updatedSet) => handleSetUpdate(activeExercise.id, editSet.id, updatedSet)}
                 onComplete={(completedSet) => {
                   handleSetComplete(activeExercise.id, editSet.id, completedSet, activeExercise.name);
@@ -539,6 +574,7 @@ export default function TrainingSession() {
               exerciseMode={activeExercise.mode}
               isActive={true}
               lastPerformance={getLastPerfForExercise(activeExercise, activeSet.id, activeSetIndex + 1)}
+              personalBest={getPersonalBest(activeExercise, activeSet.type)}
               onUpdate={(updatedSet) => handleSetUpdate(activeExercise.id, activeSet.id, updatedSet)}
               onComplete={(completedSet) => handleSetComplete(activeExercise.id, activeSet.id, completedSet, activeExercise.name)}
             />
@@ -592,7 +628,7 @@ export default function TrainingSession() {
                             </span>
                           )}
                           <span className="flex-1 text-left text-sm text-muted-foreground">{ex.name}</span>
-                          <span className="text-[10px] text-muted-foreground">{ex.sets.length}s</span>
+                          <span className="text-xs text-muted-foreground">{ex.sets.length}s</span>
                         </button>
                       ));
                     })}
@@ -629,11 +665,11 @@ export default function TrainingSession() {
       <ExercisePicker
         open={showExercisePicker !== null}
         onClose={() => setShowExercisePicker(null)}
-        onSelect={(name) => {
+        onSelect={(name, isNew) => {
           if (showExercisePicker === 'new') {
             handleAddExercise(name);
           } else if (showExercisePicker) {
-            handleReplaceExercise(showExercisePicker, name);
+            handleReplaceExercise(showExercisePicker, name, isNew);
           }
         }}
         allExerciseNames={allExerciseNames}
