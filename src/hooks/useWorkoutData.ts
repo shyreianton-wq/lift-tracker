@@ -2,6 +2,24 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { Program, WorkoutHistory, ActiveWorkout, WorkoutSet, Exercise, RotationGroupConfig, SetType } from '@/types/workout';
 import { API_URL } from '@/config';
 
+function sanitizeProgram(p: Program): Program {
+  const cleanSets = (sets: WorkoutSet[] | undefined) => (sets || []).map(s => {
+    const { isCompleted: _ic, completedReps: _cr, completedWeight: _cw, completedDuration: _cd, rpe: _rpe, myoRestPauseCount: _mrp, ...rest } = s;
+    return rest as WorkoutSet;
+  });
+  return {
+    ...p,
+    sessions: (p.sessions || []).map(s => ({
+      ...s,
+      exercises: (s.exercises || []).map(e => ({ ...e, sets: cleanSets(e.sets) })),
+    })),
+    rotationGroups: (p.rotationGroups || []).map(rg => ({
+      ...rg,
+      exercises: (rg.exercises || []).map(e => ({ ...e, sets: cleanSets(e.sets) })),
+    })),
+  };
+}
+
 // === LEGACY: old per-exercise rotationGroup field ===
 function getRotationGroupExercises(program: Program, groupId: string): Exercise[] {
   const exercises: Exercise[] = [];
@@ -150,7 +168,7 @@ export function useWorkoutData() {
       const chosen = (!serverData && localData) || (localData && localTs > serverTs) ? localData : serverData;
 
       if (chosen) {
-        setPrograms(chosen.programs || []);
+        setPrograms((chosen.programs || []).map(sanitizeProgram));
         setHistory(chosen.history || []);
         setActiveWorkout(chosen.activeWorkout || null);
         // If local was more recent than server, push it back so server catches up
@@ -169,7 +187,8 @@ export function useWorkoutData() {
   }, []);
 
   const saveToServer = useCallback(async (data: { programs: Program[]; history: WorkoutHistory[]; activeWorkout: ActiveWorkout | null }) => {
-    const stamped = { ...data, lastSavedAt: new Date().toISOString() };
+    const cleanData = { ...data, programs: data.programs.map(sanitizeProgram) };
+    const stamped = { ...cleanData, lastSavedAt: new Date().toISOString() };
     // Always write-through localStorage first (survives network failure / Safari kill)
     try { localStorage.setItem('lift_data_snapshot', JSON.stringify(stamped)); } catch { /* quota */ }
     try {
@@ -192,27 +211,6 @@ export function useWorkoutData() {
     }, 500);
     return () => { if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current); };
   }, [programs, history, activeWorkout, isLoaded, saveToServer]);
-
-  // Defensive strip: program templates must NEVER store in-session set state
-  // (completedWeight, completedReps, rpe, etc.). Old data could otherwise pollute
-  // the autofill: SetInput reads set.completedWeight first, masking lastPerformance.
-  const sanitizeProgram = (p: Program): Program => {
-    const cleanSets = (sets: WorkoutSet[] | undefined) => (sets || []).map(s => {
-      const { isCompleted: _ic, completedReps: _cr, completedWeight: _cw, completedDuration: _cd, rpe: _rpe, myoRestPauseCount: _mrp, ...rest } = s;
-      return rest as WorkoutSet;
-    });
-    return {
-      ...p,
-      sessions: (p.sessions || []).map(s => ({
-        ...s,
-        exercises: (s.exercises || []).map(e => ({ ...e, sets: cleanSets(e.sets) })),
-      })),
-      rotationGroups: (p.rotationGroups || []).map(rg => ({
-        ...rg,
-        exercises: (rg.exercises || []).map(e => ({ ...e, sets: cleanSets(e.sets) })),
-      })),
-    };
-  };
 
   const addProgram = useCallback((program: Program) => {
     setPrograms(prev => [...prev, sanitizeProgram(program)]);
