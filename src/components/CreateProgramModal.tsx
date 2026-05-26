@@ -1,6 +1,7 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Program, Session, RotationGroupConfig } from '@/types/workout';
+import { useWorkout } from '@/contexts/WorkoutContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -29,6 +30,13 @@ export function CreateProgramModal({
   const [rotationGroups, setRotationGroups] = useState<RotationGroupConfig[]>(editProgram?.rotationGroups || []);
   const [editingSession, setEditingSession] = useState<Session | null>(null);
   const [editingRotationGroups, setEditingRotationGroups] = useState(false);
+
+  const { history } = useWorkout();
+  const historyExerciseNames = useMemo(() => {
+    const names = new Set<string>();
+    for (const h of history) if (h.exerciseName) names.add(h.exerciseName);
+    return Array.from(names);
+  }, [history]);
 
   useEffect(() => {
     if (initialSessionId && editProgram && isOpen) {
@@ -125,6 +133,7 @@ export function CreateProgramModal({
                 rotationGroups={rotationGroups}
                 allSessions={sessions}
                 onRenameGlobal={handleRenameGlobal}
+                historyExerciseNames={historyExerciseNames}
               />
             ) : (
               <div className="space-y-6">

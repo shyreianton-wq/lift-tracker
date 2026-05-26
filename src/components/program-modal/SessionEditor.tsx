@@ -13,6 +13,9 @@ import {
 } from '@/types/workout';
 import { generateId } from './programModalUtils';
 import { ExerciseCreator } from './ExerciseCreator';
+import { useWorkout } from '@/contexts/WorkoutContext';
+import { isExerciseNameKnown, hasHistoryForExerciseName } from '@/lib/exercise-utils';
+import { RenameOrReplaceDialog } from '../RenameOrReplaceDialog';
 
 interface Props {
   session: Session;
@@ -21,12 +24,16 @@ interface Props {
   rotationGroups: RotationGroupConfig[];
   allSessions: Session[];
   onRenameGlobal?: (oldName: string, newName: string) => void;
+  historyExerciseNames?: string[];
 }
 
 export function SessionEditor({
   session, onSave, onCancel,
   rotationGroups, allSessions, onRenameGlobal,
+  historyExerciseNames = [],
 }: Props) {
+  const { history, programs, migrateHistoryExerciseName } = useWorkout();
+
   const [name, setName] = useState(session.name);
   const [sessionType, setSessionType] = useState<'force' | 'hypertrophie' | 'myo-rep' | undefined>(session.type);
   const [exercises, setExercises] = useState<Exercise[]>(session.exercises);
@@ -36,20 +43,76 @@ export function SessionEditor({
   const [editingExerciseNewName, setEditingExerciseNewName] = useState('');
   const [supersetPairingId, setSupersetPairingId] = useState<string | null>(null);
 
+  // Pending rename intent: when the new name doesn't exist anywhere, we
+  // surface the rename/replacement dialog and stash the rename here until
+  // the user picks a semantic.
+  const [pendingRename, setPendingRename] = useState<{
+    exerciseId: string;
+    oldName: string;
+    newName: string;
+  } | null>(null);
+
   const handleSave = () => onSave({ ...session, name, type: sessionType, exercises });
 
-  const renameExercise = (exerciseId: string, newName: string) => {
-    if (!newName.trim()) return;
-    const oldExercise = exercises.find(e => e.id === exerciseId);
-    if (!oldExercise) return;
-    const oldName = oldExercise.name;
-    setExercises(exercises.map(e => e.name === oldName ? { ...e, name: newName.trim() } : e));
-    if (onRenameGlobal && oldName !== newName.trim()) {
-      onRenameGlobal(oldName, newName.trim());
+  // Apply the rename to the local session state + propagate globally.
+  // Does NOT migrate history — callers decide that via the dialog.
+  const applyRename = (exerciseId: string, oldName: string, newName: string) => {
+    setExercises(prev => prev.map(e => e.name === oldName ? { ...e, name: newName } : e));
+    if (onRenameGlobal && oldName !== newName) {
+      onRenameGlobal(oldName, newName);
     }
     setEditingExerciseId(null);
     setEditingExerciseNewName('');
   };
+
+  const renameExercise = (exerciseId: string, newName: string) => {
+    const trimmed = newName.trim();
+    if (!trimmed) return;
+    const oldExercise = exercises.find(e => e.id === exerciseId);
+    if (!oldExercise) return;
+    const oldName = oldExercise.name;
+    if (trimmed === oldName) {
+      setEditingExerciseId(null);
+      setEditingExerciseNewName('');
+      return;
+    }
+
+    // If the new name is already known (history or another program/group),
+    // it's unambiguously a replacement: no dialog, no history migration.
+    if (isExerciseNameKnown(history, programs, trimmed)) {
+      applyRename(exerciseId, oldName, trimmed);
+      return;
+    }
+
+    // Unknown new name → only ask if the OLD name actually has history to
+    // migrate. Otherwise just apply the rename silently.
+    if (!hasHistoryForExerciseName(history, oldName)) {
+      applyRename(exerciseId, oldName, trimmed);
+      return;
+    }
+
+    setPendingRename({ exerciseId, oldName, newName: trimmed });
+  };
+
+  const confirmRenameAsRename = () => {
+    if (!pendingRename) return;
+    const { exerciseId, oldName, newName } = pendingRename;
+    migrateHistoryExerciseName(oldName, newName);
+    applyRename(exerciseId, oldName, newName);
+    setPendingRename(null);
+  };
+
+  const confirmRenameAsReplacement = () => {
+    if (!pendingRename) return;
+    const { exerciseId, oldName, newName } = pendingRename;
+    applyRename(exerciseId, oldName, newName);
+    setPendingRename(null);
+  };
+
+  const pendingRenameHistoryCount = useMemo(() => {
+    if (!pendingRename) return 0;
+    return history.filter(h => h.exerciseName === pendingRename.oldName).length;
+  }, [history, pendingRename]);
 
   const addExercise = (exercise: Exercise) => { setExercises([...exercises, exercise]); setShowAddExercise(false); };
 
@@ -186,8 +249,9 @@ export function SessionEditor({
         names.add(e.name);
       }
     }
+    for (const n of historyExerciseNames) names.add(n);
     return Array.from(names).sort();
-  }, [exercises, rotationGroups, allSessions]);
+  }, [exercises, rotationGroups, allSessions, historyExerciseNames]);
 
   const usedGroupIds = new Set(exercises.filter(e => e.rotationGroupRef).map(e => e.rotationGroupRef!));
   const availableGroups = rotationGroups.filter(g => !usedGroupIds.has(g.id));
@@ -227,6 +291,10 @@ export function SessionEditor({
           <button type="button" onClick={() => setSupersetPairingId(null)} className="ml-auto text-xs text-muted-foreground hover:text-foreground">Annuler</button>
         </motion.div>
       )}
+
+      <datalist id="exercise-names-datalist">
+        {allExerciseNames.map(n => <option key={n} value={n} />)}
+      </datalist>
 
       <div>
         <div className="flex items-center justify-between mb-3">
@@ -318,6 +386,8 @@ export function SessionEditor({
                               onChange={(e) => setEditingExerciseNewName(e.target.value)}
                               onKeyDown={(e) => { if (e.key === 'Enter') renameExercise(exercise.id, editingExerciseNewName); if (e.key === 'Escape') setEditingExerciseId(null); }}
                               className="h-7 text-sm input-dark"
+                              list="exercise-names-datalist"
+                              autoComplete="off"
                               autoFocus
                             />
                             <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0 text-success" onClick={() => renameExercise(exercise.id, editingExerciseNewName)}>
@@ -389,6 +459,16 @@ export function SessionEditor({
         <Button variant="ghost" onClick={onCancel}>Annuler</Button>
         <Button onClick={handleSave} className="btn-primary-gradient">Enregistrer la séance</Button>
       </div>
+
+      <RenameOrReplaceDialog
+        open={pendingRename !== null}
+        oldName={pendingRename?.oldName || ''}
+        newName={pendingRename?.newName || ''}
+        historyEntries={pendingRenameHistoryCount}
+        onRename={confirmRenameAsRename}
+        onReplace={confirmRenameAsReplacement}
+        onCancel={() => setPendingRename(null)}
+      />
     </div>
   );
 }

@@ -10,8 +10,10 @@ import { SupersetBanner } from '@/components/training/SupersetBanner';
 import { SetInputPanel } from '@/components/training/SetInputPanel';
 import { RestTimerControl } from '@/components/training/RestTimerControl';
 import { BottomActions } from '@/components/training/BottomActions';
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback } from "react";
 import { WorkoutSet, Exercise, ExerciseMode, SetType } from '@/types/workout';
+import { RenameOrReplaceDialog } from '@/components/RenameOrReplaceDialog';
+import { hasHistoryForExerciseName, isExerciseNameKnown } from '@/lib/exercise-utils';
 
 // Navigation step: single exercise or a superset pair
 interface NavStep {
@@ -30,6 +32,7 @@ export default function TrainingSession() {
     programs, history, activeWorkout,
     completeSet, endWorkout, getLastPerformance,
     updateProgram, resolveExercises, updateActiveWorkout,
+    migrateHistoryExerciseName,
   } = useWorkout();
 
   // ===== Local state (transient session state) =====
@@ -180,6 +183,16 @@ export default function TrainingSession() {
     return Array.from(names).sort((a, b) => a.localeCompare(b, 'fr'));
   }, [programs, history]);
 
+  // ===== Pending rename intent (in-session) =====
+  // When the user types a brand-new exercise name in the picker AND the
+  // current slot's name has logged history, we don't know if they meant
+  // "rename" (migrate history) or "replacement" (start fresh).
+  const [pendingInSessionRename, setPendingInSessionRename] = useState<{
+    slotId: string;
+    oldName: string;
+    newName: string;
+  } | null>(null);
+
   // ===== Replace an exercise in the current session =====
   // historyId rules:
   //   - isNew=true  → always a freshly minted id (brand-new exercise, no inheritance).
@@ -188,7 +201,7 @@ export default function TrainingSession() {
   //                   If the name is only known via history (no real programmed
   //                   exercise), also mint a fresh id so we don't fall back to
   //                   the old slot id and contaminate the new performance series.
-  const handleReplaceExercise = (slotId: string, newName: string, isNew: boolean) => {
+  const doReplaceSlot = useCallback((slotId: string, newName: string, isNew: boolean) => {
     const freshId = () => `repl-${slotId}-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`;
     let historyId: string | undefined;
     if (!isNew) {
@@ -207,7 +220,71 @@ export default function TrainingSession() {
     }
     if (!historyId) historyId = freshId();
     updateActiveWorkout({ exerciseOverrides: { ...(activeWorkout?.exerciseOverrides || {}), [slotId]: { name: newName, historyId } } });
+    // Reset les inputs non-validés du slot pour que SetInput auto-fill depuis la lastPerformance du nouvel exo
+    setExerciseSets(prev => {
+      const slot = prev[slotId];
+      if (!slot) return prev;
+      const cleaned: Record<string, WorkoutSet> = {};
+      for (const [setId, s] of Object.entries(slot)) {
+        if (s.isCompleted) {
+          cleaned[setId] = s;
+        } else {
+          const { completedWeight: _cw, completedReps: _cr, completedDuration: _cd, rpe: _rpe, ...rest } = s;
+          cleaned[setId] = { ...rest, isCompleted: false };
+        }
+      }
+      return { ...prev, [slotId]: cleaned };
+    });
+  }, [programs, activeWorkout, updateActiveWorkout]);
+
+  const handleReplaceExercise = (slotId: string, newName: string, isNew: boolean) => {
+    // Look up the current name of the slot — accounting for any in-session
+    // override that may already have changed it.
+    const slot = exercises.find(e => e.id === slotId);
+    const overrideName = activeWorkout?.exerciseOverrides?.[slotId]?.name;
+    const oldName = overrideName || slot?.name;
+
+    // Branche dialog : nom totalement nouveau (isNew=true), différent de
+    // l'actuel, l'actuel a un historique loggé sous son nom, et le nouveau
+    // nom n'apparaît ni en historique ni dans aucun programme connu.
+    const newNameKnown = isExerciseNameKnown(history, programs, newName);
+    if (
+      isNew
+      && oldName
+      && oldName !== newName
+      && hasHistoryForExerciseName(history, oldName)
+      && !newNameKnown
+    ) {
+      setPendingInSessionRename({ slotId, oldName, newName });
+      return;
+    }
+
+    doReplaceSlot(slotId, newName, isNew);
   };
+
+  const confirmInSessionAsRename = () => {
+    if (!pendingInSessionRename) return;
+    const { slotId, oldName, newName } = pendingInSessionRename;
+    // Migrate ALL past entries from oldName → newName so the new label
+    // immediately surfaces the existing performance series.
+    migrateHistoryExerciseName(oldName, newName);
+    // After migration the name now exists in history → treat as known
+    // (not "isNew") so we don't mint a brand-new historyId unnecessarily.
+    doReplaceSlot(slotId, newName, /* isNew */ false);
+    setPendingInSessionRename(null);
+  };
+
+  const confirmInSessionAsReplacement = () => {
+    if (!pendingInSessionRename) return;
+    const { slotId, newName } = pendingInSessionRename;
+    doReplaceSlot(slotId, newName, /* isNew */ true);
+    setPendingInSessionRename(null);
+  };
+
+  const pendingInSessionHistoryCount = useMemo(() => {
+    if (!pendingInSessionRename) return 0;
+    return history.filter(h => h.exerciseName === pendingInSessionRename.oldName).length;
+  }, [history, pendingInSessionRename]);
 
   // ===== Add a set to an exercise =====
   const handleAddSet = (exerciseId: string) => {
@@ -483,6 +560,17 @@ export default function TrainingSession() {
         }}
         allExerciseNames={allExerciseNames}
         currentName={showExercisePicker && showExercisePicker !== 'new' ? exercises.find(e => e.id === showExercisePicker)?.name : undefined}
+      />
+
+      {/* Rename vs Replacement dialog (in-session) */}
+      <RenameOrReplaceDialog
+        open={pendingInSessionRename !== null}
+        oldName={pendingInSessionRename?.oldName || ''}
+        newName={pendingInSessionRename?.newName || ''}
+        historyEntries={pendingInSessionHistoryCount}
+        onRename={confirmInSessionAsRename}
+        onReplace={confirmInSessionAsReplacement}
+        onCancel={() => setPendingInSessionRename(null)}
       />
 
       {/* Quit modal */}

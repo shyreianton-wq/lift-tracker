@@ -1,4 +1,35 @@
-import { Program } from '@/types/workout';
+import { Program, WorkoutHistory } from '@/types/workout';
+
+// True if at least one history entry was logged under this exact exerciseName.
+// Strict `===` match — no normalization beyond what's stored.
+export function hasHistoryForExerciseName(history: WorkoutHistory[], name: string): boolean {
+  if (!name) return false;
+  return history.some(h => h.exerciseName === name);
+}
+
+// True if any program/rotationGroup defines an exercise with this exact name.
+export function programsContainExerciseName(programs: Program[], name: string): boolean {
+  if (!name) return false;
+  for (const p of programs) {
+    for (const s of p.sessions) {
+      if (s.exercises.some(e => e.name === name)) return true;
+    }
+    for (const rg of p.rotationGroups || []) {
+      if (rg.exercises.some(e => e.name === name)) return true;
+    }
+  }
+  return false;
+}
+
+// Convenience: a name is "known" if it appears in history OR in any program.
+// When `true`, a rename to that name is unambiguously a replacement (no dialog).
+export function isExerciseNameKnown(
+  history: WorkoutHistory[],
+  programs: Program[],
+  name: string,
+): boolean {
+  return hasHistoryForExerciseName(history, name) || programsContainExerciseName(programs, name);
+}
 
 export function countExerciseOccurrences(program: Program, exerciseName: string): number {
   return program.sessions.filter(session =>

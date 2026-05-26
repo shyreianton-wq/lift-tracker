@@ -264,16 +264,25 @@ export function useWorkoutData() {
     setActiveWorkout(null);
   }, []);
 
-  // Match historique UNIQUEMENT par (exerciseName, setType, setIndex).
-  // Les IDs (exerciseId/setId) ne sont JAMAIS utilisés pour le matching : ils
-  // sont instables entre les sessions (slots de rotation, remplacements d'exo,
-  // ré-création d'exo via le picker) et provoquaient des mismatchs visibles
-  // (ex: 120kg en horizontal pull qui pullait 66kg d'un autre exo via id partagé).
+  // Match historique STRICTEMENT par (exerciseName, setType, setIndex).
   //
-  // Fallback legacy : si une entrée d'historique ne contient pas d'exerciseName
-  // (anciennes données pré-fix), on autorise le match par exerciseId pour ne
-  // pas casser l'affichage de l'historique existant. Les nouvelles écritures
-  // stockent toujours exerciseName + setType + setIndex (voir completeSet).
+  // Spec (confirmée 2026-05-26) :
+  //  - Lookup uniquement par exerciseName + setType + setIndex (`===` strict).
+  //  - exerciseId N'EST PLUS utilisé pour le matching nominal — il est trop
+  //    instable (slots de rotation, remplacements, ré-création via picker)
+  //    et provoquait des mismatchs visibles (ex: 120kg horizontal pull qui
+  //    récupérait 66kg d'un autre exo via un id partagé).
+  //  - Même nom dans plusieurs programmes/sessions : ignoré, on prend la
+  //    perf la plus récente tous programmes/sessions confondus.
+  //
+  // Fallback legacy strict : si TOUTES les entrées d'historique pour cet
+  // exerciseId n'ont pas d'exerciseName (anciennes données pré-fix), on
+  // autorise un fallback par exerciseId pour ne pas perdre l'affichage de
+  // l'historique existant. Dès qu'il existe au moins une entrée avec
+  // exerciseName, ce fallback est désactivé.
+  //
+  // Les paramètres _programId, _sessionId et _setId sont conservés dans la
+  // signature pour compat des call sites mais ne sont pas utilisés.
   const getLastPerformance = useCallback((
     _programId: string,
     _sessionId: string,
@@ -283,57 +292,50 @@ export function useWorkoutData() {
     exerciseName?: string,
     setIndex?: number
   ): WorkoutHistory | undefined => {
-    if (!exerciseName) {
-      // Sans nom on ne peut plus matcher de façon fiable. On retombe sur
-      // l'ancien comportement id-based pour ne rien casser, mais c'est un
-      // chemin "best-effort" que les callers normaux ne doivent plus emprunter.
-      const cutoff = activeWorkout?.startedAt ? new Date(activeWorkout.startedAt).getTime() : null;
-      const filtered = cutoff
-        ? history.filter(h => new Date(h.completedAt).getTime() < cutoff)
-        : history;
-      const candidates = filtered.filter(h => h.exerciseId === exerciseId);
-      if (candidates.length === 0) return undefined;
-      const pool = setType
-        ? (candidates.filter(h => (h.setType || 'force') === setType).length > 0
-            ? candidates.filter(h => (h.setType || 'force') === setType)
-            : candidates)
-        : candidates;
-      return [...pool].sort((a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime())[0];
-    }
-
-    // Exclure les entrées de la session en cours (un set juste validé ne
-    // doit pas devenir sa propre "perf précédente").
+    // Exclure les entrées validées DEPUIS le début de la séance en cours
+    // (un set juste validé ne doit pas devenir sa propre "perf précédente").
     const cutoff = activeWorkout?.startedAt ? new Date(activeWorkout.startedAt).getTime() : null;
     const filtered = cutoff
       ? history.filter(h => new Date(h.completedAt).getTime() < cutoff)
       : history;
 
-    // 1) Filtrage par NOM d'exercice (string match exact).
-    //    Fallback legacy : entrées sans exerciseName matchées par exerciseId.
-    const byName = filtered.filter(h => h.exerciseName === exerciseName);
-    const legacy = filtered.filter(h => !h.exerciseName && h.exerciseId === exerciseId);
-    const candidates = byName.length > 0 ? byName : legacy;
+    // 1) Match par NOM exact (trim côté caller — pas de normalisation ici).
+    //    Si pas de nom fourni : on n'a aucune clé fiable, on tombe direct sur
+    //    le fallback legacy id-based.
+    let candidates: WorkoutHistory[];
+    if (exerciseName) {
+      candidates = filtered.filter(h => h.exerciseName === exerciseName);
+      // Fallback legacy : aucune entrée nommée pour ce nom → on essaie l'id
+      // mais UNIQUEMENT sur des entrées sans exerciseName (vrais legacy).
+      if (candidates.length === 0) {
+        candidates = filtered.filter(h => !h.exerciseName && h.exerciseId === exerciseId);
+      }
+    } else {
+      candidates = filtered.filter(h => !h.exerciseName && h.exerciseId === exerciseId);
+    }
     if (candidates.length === 0) return undefined;
 
-    // 2) Filtrage par TAG (setType). Si aucun match exact, on retombe sur la
-    //    pool entière (couvre les anciennes mistags type "force loggé en hyp").
+    // 2) Filtrage par setType. Si setType demandé mais aucun match exact,
+    //    on retombe sur la pool entière (couvre les anciennes mistags).
     const sameType = setType
       ? candidates.filter(h => (h.setType || 'force') === setType)
       : candidates;
     const pool = sameType.length > 0 ? sameType : candidates;
 
-    // Tri date desc — on isole la session la plus récente pour ce nom+type.
+    // Tri date desc.
     const sorted = [...pool].sort((a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime());
     if (setIndex == null) return sorted[0];
 
-    // Regroupe les entrées de la "dernière session" (fenêtre 4h + même sessionId
-    // pour les cas où le nom a été utilisé dans plusieurs séances le même jour).
+    // Regroupe les entrées de la session source de la perf la plus récente.
+    // On accepte "même sessionId" OU fenêtre 4h pour les cas legacy où
+    // sessionId pourrait être différent mais la séance est manifestement la
+    // même (ex: replay/imports). Tous programmes/sessions confondus sinon.
     const mostRecent = sorted[0];
     const mostRecentTime = new Date(mostRecent.completedAt).getTime();
     const sessionWindow = 4 * 60 * 60 * 1000;
     const lastSessionEntries = sorted.filter(h =>
-      mostRecentTime - new Date(h.completedAt).getTime() < sessionWindow &&
       h.sessionId === mostRecent.sessionId
+      && mostRecentTime - new Date(h.completedAt).getTime() < sessionWindow
     );
 
     // 3) Match par ORDRE de série (setIndex 1-based) dans la dernière session.
@@ -353,6 +355,16 @@ export function useWorkoutData() {
     const idx = setIndex - 1;
     return chronological[idx] ?? chronological[chronological.length - 1];
   }, [history, activeWorkout]);
+
+  // Migrate all history entries with exerciseName === oldName to newName.
+  // Used when the user confirms a rename (vs replacement) via the
+  // RenameOrReplaceDialog. Idempotent: a no-op if no entry matches oldName.
+  const migrateHistoryExerciseName = useCallback((oldName: string, newName: string) => {
+    if (!oldName || !newName || oldName === newName) return;
+    setHistory(prev => prev.map(h =>
+      h.exerciseName === oldName ? { ...h, exerciseName: newName } : h
+    ));
+  }, []);
 
   // Check if an exercise should be shown (considering legacy rotation)
   const isExerciseActive = useCallback((exercise: Exercise): boolean => {
@@ -387,6 +399,7 @@ export function useWorkoutData() {
     completeSet,
     endWorkout,
     getLastPerformance,
+    migrateHistoryExerciseName,
     isExerciseActive,
     resolveExercises,
   };
