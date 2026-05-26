@@ -370,6 +370,73 @@ app.post("/api/ai/chat", async (req, res) => {
     }
   }
 });
+
+function isLocalRequest(req) {
+  const a = req.socket?.remoteAddress || "";
+  return a === "127.0.0.1" || a === "::1" || a === "::ffff:127.0.0.1";
+}
+
+app.get("/api/history/query", (req, res) => {
+  try {
+    const caller = getUserInfo(req);
+    let targetUserId = caller.id;
+    const requestedUserId = req.query.userId;
+    if (requestedUserId && requestedUserId !== caller.id) {
+      if (caller.isAdmin || isLocalRequest(req)) {
+        targetUserId = String(requestedUserId);
+      } else {
+        return res.status(403).json({ error: "Forbidden: cannot query another user" });
+      }
+    }
+
+    const data = readData(targetUserId);
+    let entries = Array.isArray(data.history) ? data.history.slice() : [];
+    const total = entries.length;
+
+    const { name, setType, setIndex, since, until, exerciseId } = req.query;
+
+    if (name) {
+      const names = String(name).split(",").map(s => s.trim()).filter(Boolean);
+      entries = entries.filter(h => names.includes(h.exerciseName));
+    }
+    if (exerciseId) {
+      entries = entries.filter(h => h.exerciseId === String(exerciseId));
+    }
+    if (setType) {
+      const types = String(setType).split(",").map(s => s.trim()).filter(Boolean);
+      entries = entries.filter(h => types.includes(h.setType || "force"));
+    }
+    if (setIndex != null && setIndex !== "") {
+      const idx = Number(setIndex);
+      if (!Number.isNaN(idx)) entries = entries.filter(h => h.setIndex === idx);
+    }
+    if (since) {
+      const t = new Date(String(since)).getTime();
+      if (!Number.isNaN(t)) entries = entries.filter(h => new Date(h.completedAt).getTime() >= t);
+    }
+    if (until) {
+      const t = new Date(String(until)).getTime();
+      if (!Number.isNaN(t)) entries = entries.filter(h => new Date(h.completedAt).getTime() <= t);
+    }
+
+    entries.sort((a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime());
+
+    const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 100, 1), 1000);
+    const sliced = entries.slice(0, limit);
+
+    res.json({
+      userId: targetUserId,
+      total,
+      matched: entries.length,
+      returned: sliced.length,
+      entries: sliced,
+    });
+  } catch (error) {
+    console.error("history/query error:", error);
+    res.status(500).json({ error: "Failed to query history" });
+  }
+});
+
 app.use(express.static(join(__dirname, "dist")));
 
 app.get("/{*splat}", (req, res) => {
