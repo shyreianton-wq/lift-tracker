@@ -457,6 +457,21 @@ export default function TrainingSession() {
     const current = activeExercise.sets[0]?.type || 'force';
     const next: SetType = current === 'force' ? 'hypertrophie' : current === 'hypertrophie' ? 'myo-rep' : 'force';
     handleExerciseUpdate({ ...activeExercise, sets: activeExercise.sets.map(s => ({ ...s, type: next })) });
+    // Reset inputs non-validés du slot pour que SetInput auto-fill avec la lastPerformance du nouveau type
+    setExerciseSets(prev => {
+      const slot = prev[activeExercise.id];
+      if (!slot) return prev;
+      const cleaned: Record<string, WorkoutSet> = {};
+      for (const [setId, s] of Object.entries(slot)) {
+        if (s.isCompleted) {
+          cleaned[setId] = s;
+        } else {
+          const { completedWeight: _cw, completedReps: _cr, completedDuration: _cd, rpe: _rpe, ...rest } = s;
+          cleaned[setId] = { ...rest, type: next, isCompleted: false };
+        }
+      }
+      return { ...prev, [activeExercise.id]: cleaned };
+    });
   };
 
   return (
