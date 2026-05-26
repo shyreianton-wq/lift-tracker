@@ -264,50 +264,70 @@ export function useWorkoutData() {
     setActiveWorkout(null);
   }, []);
 
+  // Match historique UNIQUEMENT par (exerciseName, setType, setIndex).
+  // Les IDs (exerciseId/setId) ne sont JAMAIS utilisés pour le matching : ils
+  // sont instables entre les sessions (slots de rotation, remplacements d'exo,
+  // ré-création d'exo via le picker) et provoquaient des mismatchs visibles
+  // (ex: 120kg en horizontal pull qui pullait 66kg d'un autre exo via id partagé).
+  //
+  // Fallback legacy : si une entrée d'historique ne contient pas d'exerciseName
+  // (anciennes données pré-fix), on autorise le match par exerciseId pour ne
+  // pas casser l'affichage de l'historique existant. Les nouvelles écritures
+  // stockent toujours exerciseName + setType + setIndex (voir completeSet).
   const getLastPerformance = useCallback((
-    programId: string,
-    sessionId: string,
+    _programId: string,
+    _sessionId: string,
     exerciseId: string,
-    setId: string,
+    _setId: string,
     setType?: SetType,
     exerciseName?: string,
     setIndex?: number
   ): WorkoutHistory | undefined => {
-    // Exclude entries from the current active session
+    if (!exerciseName) {
+      // Sans nom on ne peut plus matcher de façon fiable. On retombe sur
+      // l'ancien comportement id-based pour ne rien casser, mais c'est un
+      // chemin "best-effort" que les callers normaux ne doivent plus emprunter.
+      const cutoff = activeWorkout?.startedAt ? new Date(activeWorkout.startedAt).getTime() : null;
+      const filtered = cutoff
+        ? history.filter(h => new Date(h.completedAt).getTime() < cutoff)
+        : history;
+      const candidates = filtered.filter(h => h.exerciseId === exerciseId);
+      if (candidates.length === 0) return undefined;
+      const pool = setType
+        ? (candidates.filter(h => (h.setType || 'force') === setType).length > 0
+            ? candidates.filter(h => (h.setType || 'force') === setType)
+            : candidates)
+        : candidates;
+      return [...pool].sort((a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime())[0];
+    }
+
+    // Exclure les entrées de la session en cours (un set juste validé ne
+    // doit pas devenir sa propre "perf précédente").
     const cutoff = activeWorkout?.startedAt ? new Date(activeWorkout.startedAt).getTime() : null;
     const filtered = cutoff
       ? history.filter(h => new Date(h.completedAt).getTime() < cutoff)
       : history;
 
-    // Prefer name when provided: if any entries have this exerciseName, use ONLY those.
-    // Fall back to exerciseId only for legacy entries that have no exerciseName recorded.
-    // This prevents a replaced/new slot from inheriting the old slot's history via shared id.
-    let candidates: WorkoutHistory[];
-    if (exerciseName) {
-      const byName = filtered.filter(h => h.exerciseName === exerciseName);
-      if (byName.length > 0) {
-        candidates = byName;
-      } else {
-        // legacy fallback: entries with no name at all, matched by id
-        candidates = filtered.filter(h => !h.exerciseName && h.exerciseId === exerciseId);
-      }
-    } else {
-      candidates = filtered.filter(h => h.exerciseId === exerciseId);
-    }
+    // 1) Filtrage par NOM d'exercice (string match exact).
+    //    Fallback legacy : entrées sans exerciseName matchées par exerciseId.
+    const byName = filtered.filter(h => h.exerciseName === exerciseName);
+    const legacy = filtered.filter(h => !h.exerciseName && h.exerciseId === exerciseId);
+    const candidates = byName.length > 0 ? byName : legacy;
     if (candidates.length === 0) return undefined;
 
-    // Prefer entries matching the requested setType; if none, fall back to all entries
-    // (covers historical mistags like force-logged-as-myo-rep).
+    // 2) Filtrage par TAG (setType). Si aucun match exact, on retombe sur la
+    //    pool entière (couvre les anciennes mistags type "force loggé en hyp").
     const sameType = setType
-      ? candidates.filter(h => (h.setType || "force") === setType)
+      ? candidates.filter(h => (h.setType || 'force') === setType)
       : candidates;
     const pool = sameType.length > 0 ? sameType : candidates;
 
-    // Sort by date desc
+    // Tri date desc — on isole la session la plus récente pour ce nom+type.
     const sorted = [...pool].sort((a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime());
     if (setIndex == null) return sorted[0];
 
-    // Group entries from the same session as mostRecent (within 4h + same sessionId)
+    // Regroupe les entrées de la "dernière session" (fenêtre 4h + même sessionId
+    // pour les cas où le nom a été utilisé dans plusieurs séances le même jour).
     const mostRecent = sorted[0];
     const mostRecentTime = new Date(mostRecent.completedAt).getTime();
     const sessionWindow = 4 * 60 * 60 * 1000;
@@ -316,15 +336,17 @@ export function useWorkoutData() {
       h.sessionId === mostRecent.sessionId
     );
 
-    // Match by setIndex inside the last session
+    // 3) Match par ORDRE de série (setIndex 1-based) dans la dernière session.
     if (lastSessionEntries.some(h => h.setIndex != null)) {
       const match = lastSessionEntries.find(h => h.setIndex === setIndex);
       if (match) return match;
+      // Demande au-delà du nombre de séries connues : retourne la plus haute
+      // (ex: 4e série demandée alors que la dernière séance en avait 3).
       const bySI = [...lastSessionEntries].sort((a, b) => (b.setIndex ?? 0) - (a.setIndex ?? 0));
       return bySI[0];
     }
 
-    // No setIndex in history: infer by chronological order
+    // Entrées legacy sans setIndex : on infère par ordre chronologique.
     const chronological = [...lastSessionEntries].sort((a, b) =>
       new Date(a.completedAt).getTime() - new Date(b.completedAt).getTime()
     );
