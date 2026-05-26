@@ -193,12 +193,33 @@ export function useWorkoutData() {
     return () => { if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current); };
   }, [programs, history, activeWorkout, isLoaded, saveToServer]);
 
+  // Defensive strip: program templates must NEVER store in-session set state
+  // (completedWeight, completedReps, rpe, etc.). Old data could otherwise pollute
+  // the autofill: SetInput reads set.completedWeight first, masking lastPerformance.
+  const sanitizeProgram = (p: Program): Program => {
+    const cleanSets = (sets: WorkoutSet[] | undefined) => (sets || []).map(s => {
+      const { isCompleted: _ic, completedReps: _cr, completedWeight: _cw, completedDuration: _cd, rpe: _rpe, myoRestPauseCount: _mrp, ...rest } = s;
+      return rest as WorkoutSet;
+    });
+    return {
+      ...p,
+      sessions: (p.sessions || []).map(s => ({
+        ...s,
+        exercises: (s.exercises || []).map(e => ({ ...e, sets: cleanSets(e.sets) })),
+      })),
+      rotationGroups: (p.rotationGroups || []).map(rg => ({
+        ...rg,
+        exercises: (rg.exercises || []).map(e => ({ ...e, sets: cleanSets(e.sets) })),
+      })),
+    };
+  };
+
   const addProgram = useCallback((program: Program) => {
-    setPrograms(prev => [...prev, program]);
+    setPrograms(prev => [...prev, sanitizeProgram(program)]);
   }, []);
 
   const updateProgram = useCallback((program: Program) => {
-    setPrograms(prev => prev.map(p => p.id === program.id ? program : p));
+    setPrograms(prev => prev.map(p => p.id === program.id ? sanitizeProgram(program) : p));
   }, []);
 
   const deleteProgram = useCallback((programId: string) => {

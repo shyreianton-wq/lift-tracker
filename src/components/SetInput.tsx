@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Check, TrendingUp, TrendingDown, Minus, Plus, Pencil, Trophy } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 
-type LastPerf = { reps: number; weight: number; rpe?: number; duration?: number; myoRestPauseCount?: number; completedAt?: string };
+type LastPerf = { reps: number; weight: number; rpe?: number; duration?: number; myoRestPauseCount?: number; completedAt?: string; setType?: SetType };
 
 interface SetInputProps {
   set: WorkoutSet;
@@ -205,18 +205,30 @@ export function SetInput({ set, index, exerciseMode = 'reps', lastPerformance, p
           </AnimatePresence>
         </div>
         <div className="flex items-center gap-2">
-          {lastPerformance ? (
-            <div className="text-right text-muted-foreground">
-              <div className="text-xs font-medium">
-                <span className="text-muted-foreground/70 uppercase tracking-wide text-[10px] mr-1">Préc</span>
-                {lastPerformance.weight}kg × {lastPerformance.reps}
-                {lastPerformance.rpe && ` @${lastPerformance.rpe}`}
+          {lastPerformance ? (() => {
+            const prevType = lastPerformance.setType || "force";
+            const curType = set.type || "force";
+            const typeMismatch = prevType !== curType;
+            const typeShort = prevType === "myo-rep" ? "MYO" : prevType === "hypertrophie" ? "HYP" : "FORCE";
+            const typeColor = prevType === "myo-rep" ? "text-orange-400" : prevType === "hypertrophie" ? "text-blue-400" : "text-emerald-400";
+            return (
+              <div className="text-right text-muted-foreground">
+                <div className="text-xs font-medium">
+                  <span className="text-muted-foreground/70 uppercase tracking-wide text-[10px] mr-1">Préc</span>
+                  {typeMismatch && (
+                    <span className={`uppercase tracking-wide text-[10px] mr-1 font-semibold ${typeColor}`} title={`Dernière perf en ${prevType}`}>
+                      · {typeShort}
+                    </span>
+                  )}
+                  {lastPerformance.weight}kg × {lastPerformance.reps}
+                  {lastPerformance.rpe && ` @${lastPerformance.rpe}`}
+                </div>
+                {relativeDate(lastPerformance.completedAt) && (
+                  <div className="text-[10px] text-muted-foreground/70">{relativeDate(lastPerformance.completedAt)}</div>
+                )}
               </div>
-              {relativeDate(lastPerformance.completedAt) && (
-                <div className="text-[10px] text-muted-foreground/70">{relativeDate(lastPerformance.completedAt)}</div>
-              )}
-            </div>
-          ) : (
+            );
+          })() : (
             <div className="text-right text-muted-foreground/70">
               <div className="text-[10px] uppercase tracking-wide">Première fois{set.type ? ` en ${set.type}` : ''}</div>
             </div>

@@ -416,7 +416,7 @@ export default function TrainingSession() {
     const matchingSet = exercise.sets.find(s => s.id === setId);
     const resolvedId = exercise._historyId || exercise._resolvedExerciseId || exercise.id;
     const perf = getLastPerformance(program.id, session.id, resolvedId, setId, matchingSet?.type, exercise.name, setIndex);
-    return perf ? { reps: perf.reps, weight: perf.weight, rpe: perf.rpe, duration: perf.duration, myoRestPauseCount: perf.myoRestPauseCount, completedAt: perf.completedAt } : undefined;
+    return perf ? { reps: perf.reps, weight: perf.weight, rpe: perf.rpe, duration: perf.duration, myoRestPauseCount: perf.myoRestPauseCount, completedAt: perf.completedAt, setType: perf.setType } : undefined;
   };
 
   // Compute personal best (max weight*reps) for an exercise + setType from history.

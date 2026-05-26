@@ -10,6 +10,7 @@ interface LastPerformance {
   duration?: number;
   myoRestPauseCount?: number;
   completedAt: string;
+  setType?: SetType;
 }
 
 interface PersonalBest {
