@@ -147,7 +147,12 @@ export function useWorkoutData() {
 
   useEffect(() => {
     async function loadData() {
-      // Try server first
+      // One-shot cleanup of legacy snapshot (no longer used)
+      try { localStorage.removeItem('lift_data_snapshot'); } catch { /* ignore */ }
+      // Server is the single source of truth. localStorage was dropped because
+      // stale snapshots overwrote fresh server state on reload (42-entry data loss
+      // observed 2026-05-26). Resume-where-you-left-off relies on activeWorkout
+      // being persisted server-side after each set validation (~500ms debounce).
       let serverData: any = null;
       try {
         const response = await fetch(`${API_URL}/api/data`, { credentials: 'include' });
@@ -155,47 +160,11 @@ export function useWorkoutData() {
       } catch (error) {
         console.error('Failed to load data from server:', error);
       }
-      // Read local snapshot (offline-safe fallback / mid-session backup)
-      let localData: any = null;
-      try {
-        const raw = localStorage.getItem('lift_data_snapshot');
-        if (raw) localData = JSON.parse(raw);
-      } catch { /* ignore */ }
 
-      // Decide which source wins for MUTABLE state (programs, activeWorkout):
-      // last-write-wins by lastSavedAt timestamp.
-      const serverTs = serverData?.lastSavedAt ? new Date(serverData.lastSavedAt).getTime() : 0;
-      const localTs = localData?.lastSavedAt ? new Date(localData.lastSavedAt).getTime() : 0;
-      const winner = (!serverData && localData) || (localData && localTs > serverTs) ? localData : serverData;
-
-      // History is APPEND-ONLY and identified by stable id → ALWAYS merge union(server, local).
-      // Last-write-wins on history would silently drop entries written on another device.
-      // Bug observed 2026-05-26: stale localStorage snapshot wiped 42 history entries
-      // (a full session) when reload chose localData.
-      const mergeHistory = (a: any[] = [], b: any[] = []): any[] => {
-        const byId = new Map<string, any>();
-        for (const h of a) if (h?.id) byId.set(h.id, h);
-        for (const h of b) if (h?.id && !byId.has(h.id)) byId.set(h.id, h);
-        return Array.from(byId.values()).sort((x, y) => new Date(x.completedAt).getTime() - new Date(y.completedAt).getTime());
-      };
-      const mergedHistory = mergeHistory(serverData?.history, localData?.history);
-
-      if (winner || mergedHistory.length > 0) {
-        setPrograms(((winner?.programs) || []).map(sanitizeProgram));
-        setHistory(mergedHistory);
-        setActiveWorkout(winner?.activeWorkout || null);
-        // If local won or history grew, push merged state back so server catches up
-        const localWon = winner === localData && serverData && localTs > serverTs;
-        const historyGrew = mergedHistory.length > (serverData?.history?.length || 0);
-        if (localWon || historyGrew) {
-          const pushPayload = { ...(winner || {}), history: mergedHistory };
-          fetch(`${API_URL}/api/data`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify(pushPayload),
-          }).catch(() => {});
-        }
+      if (serverData) {
+        setPrograms((serverData.programs || []).map(sanitizeProgram));
+        setHistory(serverData.history || []);
+        setActiveWorkout(serverData.activeWorkout || null);
       }
       setIsLoaded(true);
     }
@@ -205,8 +174,6 @@ export function useWorkoutData() {
   const saveToServer = useCallback(async (data: { programs: Program[]; history: WorkoutHistory[]; activeWorkout: ActiveWorkout | null }) => {
     const cleanData = { ...data, programs: data.programs.map(sanitizeProgram) };
     const stamped = { ...cleanData, lastSavedAt: new Date().toISOString() };
-    // Always write-through localStorage first (survives network failure / Safari kill)
-    try { localStorage.setItem('lift_data_snapshot', JSON.stringify(stamped)); } catch { /* quota */ }
     try {
       await fetch(`${API_URL}/api/data`, {
         method: 'POST',
