@@ -162,22 +162,38 @@ export function useWorkoutData() {
         if (raw) localData = JSON.parse(raw);
       } catch { /* ignore */ }
 
-      // Decide which source wins
+      // Decide which source wins for MUTABLE state (programs, activeWorkout):
+      // last-write-wins by lastSavedAt timestamp.
       const serverTs = serverData?.lastSavedAt ? new Date(serverData.lastSavedAt).getTime() : 0;
       const localTs = localData?.lastSavedAt ? new Date(localData.lastSavedAt).getTime() : 0;
-      const chosen = (!serverData && localData) || (localData && localTs > serverTs) ? localData : serverData;
+      const winner = (!serverData && localData) || (localData && localTs > serverTs) ? localData : serverData;
 
-      if (chosen) {
-        setPrograms((chosen.programs || []).map(sanitizeProgram));
-        setHistory(chosen.history || []);
-        setActiveWorkout(chosen.activeWorkout || null);
-        // If local was more recent than server, push it back so server catches up
-        if (chosen === localData && serverData && localTs > serverTs) {
+      // History is APPEND-ONLY and identified by stable id → ALWAYS merge union(server, local).
+      // Last-write-wins on history would silently drop entries written on another device.
+      // Bug observed 2026-05-26: stale localStorage snapshot wiped 42 history entries
+      // (a full session) when reload chose localData.
+      const mergeHistory = (a: any[] = [], b: any[] = []): any[] => {
+        const byId = new Map<string, any>();
+        for (const h of a) if (h?.id) byId.set(h.id, h);
+        for (const h of b) if (h?.id && !byId.has(h.id)) byId.set(h.id, h);
+        return Array.from(byId.values()).sort((x, y) => new Date(x.completedAt).getTime() - new Date(y.completedAt).getTime());
+      };
+      const mergedHistory = mergeHistory(serverData?.history, localData?.history);
+
+      if (winner || mergedHistory.length > 0) {
+        setPrograms(((winner?.programs) || []).map(sanitizeProgram));
+        setHistory(mergedHistory);
+        setActiveWorkout(winner?.activeWorkout || null);
+        // If local won or history grew, push merged state back so server catches up
+        const localWon = winner === localData && serverData && localTs > serverTs;
+        const historyGrew = mergedHistory.length > (serverData?.history?.length || 0);
+        if (localWon || historyGrew) {
+          const pushPayload = { ...(winner || {}), history: mergedHistory };
           fetch(`${API_URL}/api/data`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
-            body: JSON.stringify(chosen),
+            body: JSON.stringify(pushPayload),
           }).catch(() => {});
         }
       }
