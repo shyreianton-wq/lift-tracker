@@ -60,7 +60,7 @@ export function SetInputPanel({
           <button onClick={onCloseEdit} className="text-xs text-muted-foreground hover:text-foreground">Fermer</button>
         </div>
         <SetInput
-          key={`edit-${editSet.id}`}
+          key={`edit-${editSet.id}-${editSet.type || "force"}`}
           set={editSet}
           index={editIdx}
           exerciseMode={activeExercise.mode}
@@ -82,7 +82,7 @@ export function SetInputPanel({
     return (
       <div className="bg-card rounded-xl border border-border p-4">
         <SetInput
-          key={activeSet.id}
+          key={`${activeSet.id}-${activeSet.type || "force"}`}
           set={activeSet}
           index={activeSetIndex}
           exerciseMode={activeExercise.mode}
