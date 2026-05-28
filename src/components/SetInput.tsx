@@ -67,44 +67,83 @@ export function SetInput({ set, index, exerciseMode = 'reps', lastPerformance, p
   }, [stopwatchRunning]);
 
   const editable = !set.isCompleted || isEditing;
-  const userTouchedWeight = set.completedWeight != null;
-  const userTouchedReps = set.completedReps != null;
-  const currentWeight = set.completedWeight ?? lastPerformance?.weight ?? set.targetWeight;
-  const currentReps = set.completedReps ?? lastPerformance?.reps ?? set.targetReps;
-  const currentDuration = set.completedDuration ?? lastPerformance?.duration ?? set.targetDuration ?? 30;
 
-  const handleDurationChange = (value: string) => onUpdate({ ...set, completedDuration: parseInt(value) || 0 });
-  const adjustDuration = (delta: number) => onUpdate({ ...set, completedDuration: Math.max(0, currentDuration + delta) });
+  // ===== Refactor 2026-05-28 =====
+  // Three distinct concepts that were previously conflated on set.completedWeight:
+  //   1. saved value      : set.completedWeight after isCompleted=true (or during edit)
+  //   2. draft value      : what's currently in the input (default OR user-typed)
+  //   3. user override    : explicit boolean — has the user touched this set's input?
+  //
+  // Local state tracks (2) and (3). (1) lives on set as before.
+  // When external defaults change (type toggle, exo swap → new lastPerformance)
+  // AND the user hasn't typed, draft reactively follows. The input always shows
+  // weightDraft/repsDraft — no more empty-input + placeholder dance.
+  //
+  // Auto-fill effect is gone: redundant since draft is initialized + reacts to defaults.
+
+  const defaultWeight = lastPerformance?.weight ?? set.targetWeight ?? 0;
+  const defaultReps = lastPerformance?.reps ?? set.targetReps ?? 0;
+  const defaultDuration = lastPerformance?.duration ?? set.targetDuration ?? 30;
+
+  // Track who set the value last: 'user' if the user typed, 'auto' if from defaults.
+  // Initialized from props: completed sets keep their saved values; fresh sets start from default.
+  const [weightDraft, setWeightDraft] = useState<number>(set.completedWeight ?? defaultWeight);
+  const [repsDraft, setRepsDraft] = useState<number>(set.completedReps ?? defaultReps);
+  const [durationDraft, setDurationDraft] = useState<number>(set.completedDuration ?? defaultDuration);
+  const [userWeight, setUserWeight] = useState<boolean>(set.isCompleted || set.completedWeight != null);
+  const [userReps, setUserReps] = useState<boolean>(set.isCompleted || set.completedReps != null);
+
+  // React to default changes (e.g. type toggle changes lastPerformance) when user hasn't typed.
+  // Stays silent for completed sets — their saved values are sacred.
+  useEffect(() => {
+    if (set.isCompleted) return;
+    if (userWeight) return;
+    setWeightDraft(defaultWeight);
+  }, [defaultWeight, userWeight, set.isCompleted]);
+  useEffect(() => {
+    if (set.isCompleted) return;
+    if (userReps) return;
+    setRepsDraft(defaultReps);
+  }, [defaultReps, userReps, set.isCompleted]);
+
+  // Convenience for the rest of the component
+  const currentWeight = weightDraft;
+  const currentReps = repsDraft;
+  const currentDuration = durationDraft;
+  const userTouchedWeight = userWeight;
+  const userTouchedReps = userReps;
+
+  const handleDurationChange = (value: string) => { const n = parseInt(value) || 0; setDurationDraft(n); onUpdate({ ...set, completedDuration: n }); };
+  const adjustDuration = (delta: number) => { const n = Math.max(0, currentDuration + delta); setDurationDraft(n); onUpdate({ ...set, completedDuration: n }); };
   const formatDur = (s: number) => `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, '0')}`;
-  const handleWeightChange = (value: string) => onUpdate({ ...set, completedWeight: parseFloat(value) || 0 });
-  const handleRepsChange = (value: string) => onUpdate({ ...set, completedReps: parseInt(value) || 0 });
-  const adjustWeight = (delta: number) => onUpdate({ ...set, completedWeight: Math.max(0, (set.completedWeight ?? currentWeight) + delta) });
-  const adjustReps = (delta: number) => onUpdate({ ...set, completedReps: Math.max(0, (set.completedReps ?? currentReps) + delta) });
+
+  const handleWeightChange = (value: string) => {
+    const n = parseFloat(value) || 0;
+    setWeightDraft(n);
+    setUserWeight(true);
+    onUpdate({ ...set, completedWeight: n });
+  };
+  const handleRepsChange = (value: string) => {
+    const n = parseInt(value) || 0;
+    setRepsDraft(n);
+    setUserReps(true);
+    onUpdate({ ...set, completedReps: n });
+  };
+  const adjustWeight = (delta: number) => {
+    const n = Math.max(0, currentWeight + delta);
+    setWeightDraft(n);
+    setUserWeight(true);
+    onUpdate({ ...set, completedWeight: n });
+  };
+  const adjustReps = (delta: number) => {
+    const n = Math.max(0, currentReps + delta);
+    setRepsDraft(n);
+    setUserReps(true);
+    onUpdate({ ...set, completedReps: n });
+  };
 
   // Smart weight step: heavier = larger increment
   const weightStep = currentWeight >= 60 ? 2.5 : currentWeight >= 20 ? 1 : 0.5;
-
-  const fillFromLast = () => {
-    if (!lastPerformance) return;
-    onUpdate({
-      ...set,
-      completedWeight: lastPerformance.weight,
-      completedReps: lastPerformance.reps,
-      ...(lastPerformance.rpe ? { rpe: lastPerformance.rpe } : {}),
-      ...(lastPerformance.duration != null ? { completedDuration: lastPerformance.duration } : {}),
-    });
-  };
-
-  // Auto-fill from last performance when the set is fresh (replaces the old "Reprendre" button).
-  // Re-runs if user wipes the inputs (userTouched* becomes false) — same behaviour as before, just automatic.
-  useEffect(() => {
-    if (!editable) return;
-    if (!lastPerformance) return;
-    if (exerciseMode !== 'reps') return;
-    if (userTouchedWeight || userTouchedReps) return;
-    fillFromLast();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [editable, lastPerformance?.weight, lastPerformance?.reps, userTouchedWeight, userTouchedReps, exerciseMode]);
 
   const handleComplete = () => {
     const completionData: WorkoutSet = exerciseMode === 'time'
@@ -298,7 +337,7 @@ export function SetInput({ set, index, exerciseMode = 'reps', lastPerformance, p
               <span className="text-[10px] uppercase tracking-wide text-muted-foreground mb-1 block">Lest (kg)</span>
               <div className="flex items-center gap-1">
                 <Button type="button" variant="outline" size="icon" className="h-11 w-11 shrink-0" {...weightHoldDown} disabled={!editable}><Minus className="h-4 w-4" /></Button>
-                <Input type="number" inputMode="decimal" step="0.5" value={set.isCompleted ? set.completedWeight : (userTouchedWeight ? currentWeight : '')} placeholder={!userTouchedWeight ? String(currentWeight) : undefined} onChange={(e) => handleWeightChange(e.target.value)} disabled={!editable} className="h-11 text-center text-base font-semibold input-dark px-1 min-w-0" />
+                <Input type="number" inputMode="decimal" step="0.5" value={currentWeight} onChange={(e) => handleWeightChange(e.target.value)} disabled={!editable} className="h-11 text-center text-base font-semibold input-dark px-1 min-w-0" />
                 <Button type="button" variant="outline" size="icon" className="h-11 w-11 shrink-0" {...weightHold} disabled={!editable}><Plus className="h-4 w-4" /></Button>
               </div>
             </div>
@@ -310,7 +349,7 @@ export function SetInput({ set, index, exerciseMode = 'reps', lastPerformance, p
             <span className="text-[10px] uppercase tracking-wide text-muted-foreground mb-1 block">Poids (kg) <span className="text-muted-foreground/60">±{weightStep}</span></span>
             <div className="flex items-center gap-1">
               <Button type="button" variant="outline" size="icon" className="h-11 w-11 shrink-0" {...weightHoldDown} disabled={!editable}><Minus className="h-4 w-4" /></Button>
-              <Input type="number" inputMode="decimal" step={weightStep} value={set.isCompleted ? set.completedWeight : (userTouchedWeight ? currentWeight : '')} placeholder={!userTouchedWeight ? String(currentWeight) : undefined} onChange={(e) => handleWeightChange(e.target.value)} disabled={!editable} className="h-11 text-center text-base font-semibold input-dark px-1 min-w-0" />
+              <Input type="number" inputMode="decimal" step={weightStep} value={currentWeight} onChange={(e) => handleWeightChange(e.target.value)} disabled={!editable} className="h-11 text-center text-base font-semibold input-dark px-1 min-w-0" />
               <Button type="button" variant="outline" size="icon" className="h-11 w-11 shrink-0" {...weightHold} disabled={!editable}><Plus className="h-4 w-4" /></Button>
             </div>
           </div>
@@ -318,7 +357,7 @@ export function SetInput({ set, index, exerciseMode = 'reps', lastPerformance, p
             <span className="text-[10px] uppercase tracking-wide text-muted-foreground mb-1 block">Reps</span>
             <div className="flex items-center gap-1">
               <Button type="button" variant="outline" size="icon" className="h-11 w-11 shrink-0" {...repsHoldDown} disabled={!editable}><Minus className="h-4 w-4" /></Button>
-              <Input type="number" inputMode="numeric" value={set.isCompleted ? set.completedReps : (userTouchedReps ? currentReps : '')} placeholder={!userTouchedReps ? String(currentReps) : undefined} onChange={(e) => handleRepsChange(e.target.value)} disabled={!editable} className="h-11 text-center text-base font-semibold input-dark px-1 min-w-0" />
+              <Input type="number" inputMode="numeric" value={currentReps} onChange={(e) => handleRepsChange(e.target.value)} disabled={!editable} className="h-11 text-center text-base font-semibold input-dark px-1 min-w-0" />
               <Button type="button" variant="outline" size="icon" className="h-11 w-11 shrink-0" {...repsHold} disabled={!editable}><Plus className="h-4 w-4" /></Button>
             </div>
           </div>
