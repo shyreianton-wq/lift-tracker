@@ -195,13 +195,17 @@ export function SetInput({ set, index, exerciseMode = 'reps', lastPerformance, p
   const _displayRpe = set.rpe || 7;
   let _idx = rpeLevels.findIndex(l => l.rpe >= _displayRpe);
   const rpeIdx = _idx < 0 ? 0 : _idx;
-  const cycleRpe = (dir: 1 | -1) => {
+  // Cycle RPE forward: Easy → Medium → Hard → Very Hard → Easy ...
+  // Pure onClick (no pointerDown gesture) to avoid the bug where useHoldRepeat
+  // fires the callback on pointer-down THEN onClick re-fires after release,
+  // cancelling out. Long-press backward removed: a single tap forward is
+  // unambiguous and easier to discover.
+  const cycleRpe = () => {
     if (!editable) return;
-    const nextIdx = (rpeIdx + dir + rpeLevels.length) % rpeLevels.length;
+    const nextIdx = (rpeIdx + 1) % rpeLevels.length;
     onUpdate({ ...set, rpe: rpeLevels[nextIdx].rpe });
     try { (navigator as any).vibrate?.(10); } catch {}
   };
-  const rpeHoldBack = useHoldRepeat(() => cycleRpe(-1), 600, 400);
 
   return (
     <motion.div
@@ -399,8 +403,7 @@ export function SetInput({ set, index, exerciseMode = 'reps', lastPerformance, p
             <div className="flex items-center gap-3">
               <button
                 type="button"
-                onClick={() => cycleRpe(1)}
-                {...rpeHoldBack}
+                onClick={cycleRpe}
                 disabled={!editable}
                 className={`w-16 h-16 rounded-full flex flex-col items-center justify-center transition-all ring-4 ${activeLevel.color} ${activeLevel.ring} ${!editable ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer active:scale-95'}`}
               >
@@ -409,7 +412,7 @@ export function SetInput({ set, index, exerciseMode = 'reps', lastPerformance, p
               </button>
               <div>
                 <p className="text-sm font-semibold text-foreground">{activeLevel.label}</p>
-                <p className="text-[10px] text-muted-foreground">Tap : ↑ • Hold : ↓</p>
+                <p className="text-[10px] text-muted-foreground">Tap pour cycler</p>
               </div>
             </div>
           );
