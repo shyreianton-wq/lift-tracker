@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { X, Timer as TimerIcon } from 'lucide-react';
+import { X, Timer as TimerIcon, ListChecks } from 'lucide-react';
 
 interface SessionHeaderProps {
   sessionName: string;
@@ -9,6 +9,7 @@ interface SessionHeaderProps {
   progress: number;
   timerDuration: number;
   onOpenRest: () => void;
+  onOpenMap: () => void;
   onRequestQuit: () => void;
 }
 
@@ -19,6 +20,7 @@ export function SessionHeader({
   progress,
   timerDuration,
   onOpenRest,
+  onOpenMap,
   onRequestQuit,
 }: SessionHeaderProps) {
   return (
@@ -29,6 +31,15 @@ export function SessionHeader({
         </Button>
         <span className="text-xs text-muted-foreground truncate">{sessionName} • {completedSetsCount}/{totalSets}</span>
       </div>
+
+      {/* Bouton plan de séance — ouvre le bottom sheet de navigation */}
+      <button
+        onClick={onOpenMap}
+        className="flex items-center justify-center w-9 h-9 rounded-full bg-secondary text-foreground hover:bg-secondary/80 active:scale-95 transition-all shrink-0"
+        aria-label="Voir le plan de la séance"
+      >
+        <ListChecks className="h-4 w-4" />
+      </button>
 
       {/* Bouton chrono prominent — ouvre l overlay plein écran */}
       <button

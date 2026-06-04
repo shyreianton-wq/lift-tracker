@@ -10,6 +10,7 @@ import { SupersetBanner } from '@/components/training/SupersetBanner';
 import { SetInputPanel } from '@/components/training/SetInputPanel';
 import { BottomActions } from '@/components/training/BottomActions';
 import { RestOverlay } from '@/components/training/RestOverlay';
+import { SessionMapSheet } from '@/components/training/SessionMapSheet';
 import { useState, useMemo, useCallback } from "react";
 import { WorkoutSet, Exercise, ExerciseMode, SetType } from '@/types/workout';
 import { RenameOrReplaceDialog } from '@/components/RenameOrReplaceDialog';
@@ -38,6 +39,7 @@ export default function TrainingSession() {
   // ===== Local state (transient session state) =====
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [restOpen, setRestOpen] = useState(false);
+  const [mapOpen, setMapOpen] = useState(false);
   const [exerciseSets, setExerciseSets] = useState<Record<string, Record<string, WorkoutSet>>>({});
   const [showCompleteModal, setShowCompleteModal] = useState(false);
   const [supersetActiveIdx, setSupersetActiveIdx] = useState(0);
@@ -490,6 +492,7 @@ export default function TrainingSession() {
             progress={progress}
             timerDuration={timerDuration}
             onOpenRest={openRest}
+            onOpenMap={() => setMapOpen(true)}
             onRequestQuit={() => setShowCompleteModal(true)}
           />
           <ExerciseHeader
@@ -581,6 +584,16 @@ export default function TrainingSession() {
         onRename={confirmInSessionAsRename}
         onReplace={confirmInSessionAsReplacement}
         onCancel={() => setPendingInSessionRename(null)}
+      />
+
+      {/* Plan de séance — nav non-séquentielle */}
+      <SessionMapSheet
+        open={mapOpen}
+        onClose={() => setMapOpen(false)}
+        steps={navSteps}
+        currentStepIndex={currentStepIndex}
+        exerciseSets={exerciseSets}
+        onJump={(idx) => { setCurrentStepIndex(idx); setSupersetActiveIdx(0); }}
       />
 
       {/* Rest overlay plein écran — déclenché auto à la validation ou via bouton chrono header */}
