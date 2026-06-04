@@ -15,6 +15,7 @@ interface WorkoutContextType {
   completeSet: (exerciseId: string, setId: string, completedSet: WorkoutSet, exerciseName?: string, setIndex?: number) => void;
   endWorkout: () => void;
   getLastPerformance: (programId: string, sessionId: string, exerciseId: string, setId: string, setType?: SetType, exerciseName?: string, setIndex?: number) => WorkoutHistory | undefined;
+  getPreviousSessionForExercise: (programId: string, sessionId: string, exerciseName: string) => Map<number, WorkoutHistory>;
   migrateHistoryExerciseName: (oldName: string, newName: string) => void;
   isExerciseActive: (exercise: Exercise) => boolean;
   resolveExercises: (exercises: Exercise[]) => Exercise[];

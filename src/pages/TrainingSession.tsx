@@ -11,6 +11,7 @@ import { SetInputPanel } from '@/components/training/SetInputPanel';
 import { BottomActions } from '@/components/training/BottomActions';
 import { RestOverlay } from '@/components/training/RestOverlay';
 import { SessionMapSheet } from '@/components/training/SessionMapSheet';
+import { SeriesComparison } from '@/components/training/SeriesComparison';
 import { useState, useMemo, useCallback } from "react";
 import { WorkoutSet, Exercise, ExerciseMode, SetType } from '@/types/workout';
 import { RenameOrReplaceDialog } from '@/components/RenameOrReplaceDialog';
@@ -31,7 +32,7 @@ export default function TrainingSession() {
   const navigate = useNavigate();
   const {
     programs, history, activeWorkout,
-    completeSet, endWorkout, getLastPerformance,
+    completeSet, endWorkout, getLastPerformance, getPreviousSessionForExercise,
     updateProgram, resolveExercises, updateActiveWorkout,
     migrateHistoryExerciseName,
   } = useWorkout();
@@ -527,6 +528,14 @@ export default function TrainingSession() {
             exerciseSets={exerciseSets}
             onSelectSet={setEditingSetId}
             onAddSet={handleAddSet}
+          />
+        )}
+
+        {activeExercise && (
+          <SeriesComparison
+            previousSession={getPreviousSessionForExercise(program.id, session.id, activeExercise.name)}
+            totalSets={activeExercise.sets.length}
+            activeSetIndex={activeSetIndex}
           />
         )}
 
