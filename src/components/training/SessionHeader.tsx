@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { X } from 'lucide-react';
+import { X, Timer as TimerIcon } from 'lucide-react';
 
 interface SessionHeaderProps {
   sessionName: string;
@@ -8,8 +8,7 @@ interface SessionHeaderProps {
   totalSets: number;
   progress: number;
   timerDuration: number;
-  showTimer: boolean;
-  onToggleTimer: () => void;
+  onOpenRest: () => void;
   onRequestQuit: () => void;
 }
 
@@ -19,27 +18,29 @@ export function SessionHeader({
   totalSets,
   progress,
   timerDuration,
-  showTimer,
-  onToggleTimer,
+  onOpenRest,
   onRequestQuit,
 }: SessionHeaderProps) {
   return (
-    <div className="flex items-center justify-between mb-1">
-      <div className="flex items-center gap-2">
-        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={onRequestQuit}>
+    <div className="flex items-center justify-between mb-1 gap-2">
+      <div className="flex items-center gap-2 min-w-0">
+        <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={onRequestQuit}>
           <X className="h-4 w-4" />
         </Button>
-        <span className="text-xs text-muted-foreground">{sessionName} • {completedSetsCount}/{totalSets}</span>
+        <span className="text-xs text-muted-foreground truncate">{sessionName} • {completedSetsCount}/{totalSets}</span>
       </div>
+
+      {/* Bouton chrono prominent — ouvre l overlay plein écran */}
       <button
-        onClick={onToggleTimer}
-        className="flex items-center gap-1 px-2 py-1 rounded-full bg-primary/10 hover:bg-primary/20 transition-colors"
-        aria-pressed={showTimer}
+        onClick={onOpenRest}
+        className="flex items-center gap-1.5 px-3 h-9 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 active:scale-95 transition-all shadow-sm shrink-0"
+        aria-label="Démarrer le chrono de repos"
       >
-        <span className="text-xs">⏱</span>
-        <span className="text-xs font-medium text-primary">{timerDuration}s</span>
+        <TimerIcon className="h-4 w-4" />
+        <span className="text-sm font-bold tabular-nums">{timerDuration}s</span>
       </button>
-      <div className="w-8 h-8 relative">
+
+      <div className="w-8 h-8 relative shrink-0">
         <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
           <circle cx="50" cy="50" r="42" fill="none" stroke="hsl(var(--secondary))" strokeWidth="8" />
           <motion.circle
