@@ -5,13 +5,12 @@ import { Button } from '@/components/ui/button';
 import { ExercisePicker } from '@/components/ExercisePicker';
 import { SessionHeader } from '@/components/training/SessionHeader';
 import { ExerciseHeader } from '@/components/training/ExerciseHeader';
-import { SeriesPills } from '@/components/training/SeriesPills';
 import { SupersetBanner } from '@/components/training/SupersetBanner';
 import { SetInputPanel } from '@/components/training/SetInputPanel';
 import { BottomActions } from '@/components/training/BottomActions';
 import { RestOverlay } from '@/components/training/RestOverlay';
 import { SessionMapSheet } from '@/components/training/SessionMapSheet';
-import { SeriesComparison } from '@/components/training/SeriesComparison';
+import { SeriesStrip } from '@/components/training/SeriesStrip';
 import { useState, useMemo, useCallback } from "react";
 import { WorkoutSet, Exercise, ExerciseMode, SetType } from '@/types/workout';
 import { RenameOrReplaceDialog } from '@/components/RenameOrReplaceDialog';
@@ -45,7 +44,6 @@ export default function TrainingSession() {
   const [showCompleteModal, setShowCompleteModal] = useState(false);
   const [supersetActiveIdx, setSupersetActiveIdx] = useState(0);
   const [timerKey, setTimerKey] = useState(0);
-  const [showExerciseList, setShowExerciseList] = useState(false);
   const [showExercisePicker, setShowExercisePicker] = useState<string | null>(null); // exerciseId or 'new'
   const [editingSetId, setEditingSetId] = useState<string | null>(null);
 
@@ -450,7 +448,6 @@ export default function TrainingSession() {
   const exProgression = activeExercise ? computeProgression(activeExercise) : null;
 
   // Remaining exercises after current
-  const remainingSteps = navSteps.slice(currentStepIndex + 1);
 
   // ===== Top-row toggles for current exercise =====
   const handleToggleMode = () => {
@@ -512,7 +509,7 @@ export default function TrainingSession() {
         </div>
       </header>
 
-      <main className="container flex-1 px-4 pt-3 pb-6">
+      <main className="container flex-1 px-4 pt-3 pb-3">
         {currentStep?.type === 'superset' && (
           <SupersetBanner
             exercises={[currentStep.exercises[0], currentStep.exercises[1]]}
@@ -521,21 +518,14 @@ export default function TrainingSession() {
         )}
 
         {activeExercise && (
-          <SeriesPills
+          <SeriesStrip
             exercise={activeExercise}
+            previousSession={getPreviousSessionForExercise(program.id, session.id, activeExercise.name)}
             activeSetIndex={activeSetIndex}
             editingSetId={editingSetId}
             exerciseSets={exerciseSets}
             onSelectSet={setEditingSetId}
             onAddSet={handleAddSet}
-          />
-        )}
-
-        {activeExercise && (
-          <SeriesComparison
-            previousSession={getPreviousSessionForExercise(program.id, session.id, activeExercise.name)}
-            totalSets={activeExercise.sets.length}
-            activeSetIndex={activeSetIndex}
           />
         )}
 
@@ -554,15 +544,6 @@ export default function TrainingSession() {
         />
 
         <BottomActions
-          remainingSteps={remainingSteps}
-          currentStepIndex={currentStepIndex}
-          showExerciseList={showExerciseList}
-          onToggleExerciseList={() => setShowExerciseList(!showExerciseList)}
-          onJumpToStep={(stepIdx, supersetIdx) => {
-            setCurrentStepIndex(stepIdx);
-            setSupersetActiveIdx(supersetIdx);
-            setShowExerciseList(false);
-          }}
           onRequestAddExercise={() => setShowExercisePicker('new')}
           allSetsCompleted={allSetsCompleted}
           onEndWorkout={handleEndWorkout}
