@@ -13,6 +13,16 @@ interface SessionHeaderProps {
   onRequestQuit: () => void;
 }
 
+function formatChrono(secs: number) {
+  if (secs < 60) return `${secs}s`;
+  const m = Math.floor(secs / 60);
+  const s = secs % 60;
+  return s ? `${m}:${s.toString().padStart(2, '0')}` : `${m}m`;
+}
+
+// Header en 2 clusters: info à gauche, actions à droite.
+// Barre de progression fine sous le header (1.5px) — donne le contexte visuel
+// sans embarquer un cercle séparé qui redondait avec le compteur N/M.
 export function SessionHeader({
   sessionName,
   completedSetsCount,
@@ -24,50 +34,51 @@ export function SessionHeader({
   onRequestQuit,
 }: SessionHeaderProps) {
   return (
-    <div className="flex items-center justify-between mb-1 gap-2">
-      <div className="flex items-center gap-2 min-w-0">
-        <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={onRequestQuit}>
-          <X className="h-4 w-4" />
-        </Button>
-        <span className="text-xs text-muted-foreground truncate">{sessionName} • {completedSetsCount}/{totalSets}</span>
+    <div>
+      <div className="flex items-center justify-between gap-3 mb-1">
+        {/* Cluster gauche — passif: quit + label */}
+        <div className="flex items-center gap-2 min-w-0 flex-1">
+          <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0 -ml-2" onClick={onRequestQuit}>
+            <X className="h-4 w-4" />
+          </Button>
+          <div className="min-w-0">
+            <div className="text-sm font-semibold text-foreground truncate leading-tight">
+              {sessionName}
+            </div>
+            <div className="text-[10px] text-muted-foreground tabular-nums leading-tight">
+              {completedSetsCount}/{totalSets} séries · {Math.round(progress)}%
+            </div>
+          </div>
+        </div>
+
+        {/* Cluster droit — actions: plan + chrono */}
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            onClick={onOpenMap}
+            aria-label="Voir le plan de la séance"
+            className="flex items-center justify-center w-9 h-9 rounded-full bg-secondary text-foreground hover:bg-secondary/80 active:scale-95 transition-all"
+          >
+            <ListChecks className="h-4 w-4" />
+          </button>
+          <button
+            onClick={onOpenRest}
+            aria-label="Démarrer le chrono de repos"
+            className="flex items-center gap-1.5 px-3.5 h-10 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 active:scale-95 transition-all shadow-sm"
+          >
+            <TimerIcon className="h-4 w-4" />
+            <span className="text-sm font-bold tabular-nums">{formatChrono(timerDuration)}</span>
+          </button>
+        </div>
       </div>
 
-      {/* Bouton plan de séance — ouvre le bottom sheet de navigation */}
-      <button
-        onClick={onOpenMap}
-        className="flex items-center justify-center w-9 h-9 rounded-full bg-secondary text-foreground hover:bg-secondary/80 active:scale-95 transition-all shrink-0"
-        aria-label="Voir le plan de la séance"
-      >
-        <ListChecks className="h-4 w-4" />
-      </button>
-
-      {/* Bouton chrono prominent — ouvre l overlay plein écran */}
-      <button
-        onClick={onOpenRest}
-        className="flex items-center gap-1.5 px-3 h-9 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 active:scale-95 transition-all shadow-sm shrink-0"
-        aria-label="Démarrer le chrono de repos"
-      >
-        <TimerIcon className="h-4 w-4" />
-        <span className="text-sm font-bold tabular-nums">{timerDuration}s</span>
-      </button>
-
-      <div className="w-8 h-8 relative shrink-0">
-        <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
-          <circle cx="50" cy="50" r="42" fill="none" stroke="hsl(var(--secondary))" strokeWidth="8" />
-          <motion.circle
-            cx="50" cy="50" r="42" fill="none"
-            stroke="hsl(var(--primary))" strokeWidth="8"
-            strokeLinecap="round"
-            strokeDasharray={`${2 * Math.PI * 42}`}
-            strokeDashoffset={`${2 * Math.PI * 42 * (1 - progress / 100)}`}
-            initial={false}
-            animate={{ strokeDashoffset: `${2 * Math.PI * 42 * (1 - progress / 100)}` }}
-            transition={{ duration: 0.3 }}
-          />
-        </svg>
-        <span className="absolute inset-0 flex items-center justify-center text-[11px] font-bold">
-          {Math.round(progress)}%
-        </span>
+      {/* Barre de progression fine — remplace l ancien cercle */}
+      <div className="h-1 w-full rounded-full bg-secondary/60 overflow-hidden">
+        <motion.div
+          className="h-full bg-primary rounded-full"
+          initial={false}
+          animate={{ width: `${progress}%` }}
+          transition={{ duration: 0.3 }}
+        />
       </div>
     </div>
   );
