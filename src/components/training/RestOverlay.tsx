@@ -107,21 +107,48 @@ export function RestOverlay({
             )}
           </div>
 
-          {/* Boutons bas — pause/play, ±15s, skip */}
+          {/* Picker presets + boutons relatifs ±5/±15s + pause/play */}
           <div className="p-6 pb-10">
-            <div className="flex justify-center items-center gap-3">
+            {/* Presets absolus pour réglage précis */}
+            <div className="flex justify-center flex-wrap gap-1.5 mb-4">
+              {[15, 30, 60, 90, 120, 180, 300].map(sec => {
+                const isCurrent = sec === durationSec;
+                const label = sec < 60 ? `${sec}s` : sec % 60 === 0 ? `${sec/60}m` : `${Math.floor(sec/60)}:${(sec%60).toString().padStart(2,'0')}`;
+                return (
+                  <button
+                    key={sec}
+                    type="button"
+                    onClick={() => timer.setDuration(sec)}
+                    className={`px-3 h-9 rounded-full text-sm font-semibold transition-colors tabular-nums ${
+                      isCurrent ? 'bg-primary text-white' : 'bg-white/10 text-white/80 hover:bg-white/20'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="flex justify-center items-center gap-2">
               <button
                 type="button"
                 onClick={() => timer.setDuration(Math.max(5, remaining - 15))}
-                className="flex items-center gap-1 px-4 h-14 rounded-2xl bg-white/10 text-white text-lg font-semibold hover:bg-white/20"
+                className="flex items-center gap-1 px-3 h-12 rounded-2xl bg-white/10 text-white text-base font-semibold hover:bg-white/20"
               >
-                <Minus className="h-5 w-5" /> 15s
+                <Minus className="h-4 w-4" /> 15s
+              </button>
+              <button
+                type="button"
+                onClick={() => timer.setDuration(Math.max(5, remaining - 5))}
+                className="flex items-center gap-1 px-2.5 h-12 rounded-2xl bg-white/10 text-white text-sm font-semibold hover:bg-white/20"
+              >
+                <Minus className="h-3.5 w-3.5" /> 5s
               </button>
 
               <button
                 type="button"
                 onClick={() => timer.isRunning ? timer.pause() : timer.start()}
-                className="w-16 h-16 rounded-full bg-primary text-white flex items-center justify-center shadow-lg hover:bg-primary/90"
+                className="w-16 h-16 rounded-full bg-primary text-white flex items-center justify-center shadow-lg hover:bg-primary/90 mx-1"
                 aria-label={timer.isRunning ? 'Pause' : 'Démarrer'}
               >
                 {timer.isRunning ? <Pause className="h-7 w-7" /> : <Play className="h-7 w-7" />}
@@ -129,10 +156,17 @@ export function RestOverlay({
 
               <button
                 type="button"
-                onClick={() => timer.setDuration(remaining + 15)}
-                className="flex items-center gap-1 px-4 h-14 rounded-2xl bg-white/10 text-white text-lg font-semibold hover:bg-white/20"
+                onClick={() => timer.setDuration(remaining + 5)}
+                className="flex items-center gap-1 px-2.5 h-12 rounded-2xl bg-white/10 text-white text-sm font-semibold hover:bg-white/20"
               >
-                <Plus className="h-5 w-5" /> 15s
+                <Plus className="h-3.5 w-3.5" /> 5s
+              </button>
+              <button
+                type="button"
+                onClick={() => timer.setDuration(remaining + 15)}
+                className="flex items-center gap-1 px-3 h-12 rounded-2xl bg-white/10 text-white text-base font-semibold hover:bg-white/20"
+              >
+                <Plus className="h-4 w-4" /> 15s
               </button>
             </div>
 

@@ -544,7 +544,6 @@ export default function TrainingSession() {
         />
 
         <BottomActions
-          onRequestAddExercise={() => setShowExercisePicker('new')}
           allSetsCompleted={allSetsCompleted}
           onEndWorkout={handleEndWorkout}
         />
@@ -584,6 +583,7 @@ export default function TrainingSession() {
         currentStepIndex={currentStepIndex}
         exerciseSets={exerciseSets}
         onJump={(idx) => { setCurrentStepIndex(idx); setSupersetActiveIdx(0); }}
+        onRequestAddExercise={() => setShowExercisePicker('new')}
       />
 
       {/* Rest overlay plein écran — déclenché auto à la validation ou via bouton chrono header */}

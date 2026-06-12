@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { Check, CircleDot, Circle, Layers } from 'lucide-react';
+import { Check, CircleDot, Circle, Layers, Plus } from 'lucide-react';
 import { Exercise, SetType, WorkoutSet } from '@/types/workout';
 
 interface ResolvedExercise extends Exercise {
@@ -19,6 +19,7 @@ interface SessionMapSheetProps {
   currentStepIndex: number;
   exerciseSets: Record<string, Record<string, WorkoutSet>>;
   onJump: (index: number) => void;
+  onRequestAddExercise: () => void;
 }
 
 function setTypeBadge(t: SetType | undefined) {
@@ -36,7 +37,7 @@ function exerciseProgress(ex: ResolvedExercise, exerciseSets: Record<string, Rec
 // Bottom sheet listant tous les exos de la séance — tap pour sauter directement.
 // Utile quand on prend les exos dans le désordre (machine occupée, etc.).
 export function SessionMapSheet({
-  open, onClose, steps, currentStepIndex, exerciseSets, onJump,
+  open, onClose, steps, currentStepIndex, exerciseSets, onJump, onRequestAddExercise,
 }: SessionMapSheetProps) {
   return (
     <AnimatePresence>
@@ -115,7 +116,15 @@ export function SessionMapSheet({
                 );
               })}
             </div>
-            <div className="px-5 py-3 border-t border-border">
+            <div className="px-5 py-3 border-t border-border space-y-2">
+              <button
+                type="button"
+                onClick={() => { onRequestAddExercise(); onClose(); }}
+                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-dashed border-border hover:border-primary/50 hover:bg-primary/5 transition-colors text-muted-foreground hover:text-primary"
+              >
+                <Plus className="h-4 w-4" />
+                <span className="text-sm font-medium">Ajouter un exercice</span>
+              </button>
               <button
                 type="button"
                 onClick={onClose}
