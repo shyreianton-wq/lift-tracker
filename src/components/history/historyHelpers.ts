@@ -1,40 +1,198 @@
 import { WorkoutHistory, Program } from '@/types/workout';
 
-export function formatDuration(seconds: number): string {
-  const mins = Math.floor(seconds / 60);
-  const secs = seconds % 60;
-  return `${mins}:${secs.toString().padStart(2, '0')}`;
+export function formatDuration(s: number): string {
+  if (s < 60) return `${s}s`;
+  const m = Math.floor(s / 60);
+  const sec = s % 60;
+  return sec === 0 ? `${m}m` : `${m}m${sec}s`;
 }
 
-export function getExerciseName(programs: Program[], exerciseId: string, storedName?: string): string {
-  // Prefer stored name (has resolved rotation name)
-  if (storedName) return storedName;
+export function getExerciseName(programs: Program[], exerciseId: string, fallback?: string): string {
+  if (fallback) return fallback;
   for (const p of programs) {
     for (const s of p.sessions) {
-      for (const e of s.exercises) {
-        if (e.id === exerciseId) {
-          // For rotation slots, check if we can resolve from group
-          if (e.rotationGroupRef) {
-            const rg = p.rotationGroups?.find(g => g.id === e.rotationGroupRef);
-            if (rg) return '🔄 ' + rg.name;
-          }
-          return e.name;
-        }
-      }
+      const ex = s.exercises.find(e => e.id === exerciseId);
+      if (ex) return ex.name;
     }
   }
   return '?';
 }
 
-export function getExerciseMode(programs: Program[], exerciseId: string): 'reps' | 'time' {
+export function getExerciseMode(programs: Program[], exerciseId: string): string {
   for (const p of programs) {
     for (const s of p.sessions) {
-      for (const e of s.exercises) {
-        if (e.id === exerciseId) return e.mode || 'reps';
-      }
+      const ex = s.exercises.find(e => e.id === exerciseId);
+      if (ex) return ex.mode || 'reps';
     }
   }
   return 'reps';
 }
 
-export type HistoryEntry = WorkoutHistory;
+export function relativeDate(iso: string): string {
+  const then = new Date(iso).getTime();
+  const days = Math.round((Date.now() - then) / 86400000);
+  if (days < 1) return "aujourd'hui";
+  if (days === 1) return 'hier';
+  if (days < 7) return `il y a ${days}j`;
+  if (days < 30) return `il y a ${Math.round(days/7)}sem`;
+  if (days < 365) return `il y a ${Math.round(days/30)}mois`;
+  return `il y a ${Math.round(days/365)}an`;
+}
+
+// ===========================================================================
+// Groupement des entries d historique en "workouts" (séances effectivement
+// réalisées). Une séance = entries consécutives séparées par moins de 30min.
+// ===========================================================================
+
+export interface GroupedWorkout {
+  id: string;                  // identifiant stable (programId__sessionId__startDate)
+  programId: string;
+  sessionId: string;
+  startedAt: string;           // ISO de la 1re entry
+  endedAt: string;             // ISO de la dernière entry
+  durationSec: number;
+  sets: WorkoutHistory[];
+}
+
+export function groupIntoWorkouts(history: WorkoutHistory[]): GroupedWorkout[] {
+  if (history.length === 0) return [];
+  const sorted = [...history].sort((a, b) => a.completedAt.localeCompare(b.completedAt));
+  const groups: GroupedWorkout[] = [];
+  let cur: GroupedWorkout | null = null;
+  const GAP = 30 * 60 * 1000; // 30 min
+
+  for (const h of sorted) {
+    const ts = new Date(h.completedAt).getTime();
+    if (!cur || h.programId !== cur.programId || h.sessionId !== cur.sessionId ||
+        ts - new Date(cur.endedAt).getTime() > GAP) {
+      if (cur) groups.push(cur);
+      cur = {
+        id: `${h.programId}__${h.sessionId}__${h.completedAt}`,
+        programId: h.programId,
+        sessionId: h.sessionId,
+        startedAt: h.completedAt,
+        endedAt: h.completedAt,
+        durationSec: 0,
+        sets: [h],
+      };
+    } else {
+      cur.sets.push(h);
+      cur.endedAt = h.completedAt;
+      cur.durationSec = Math.round((new Date(cur.endedAt).getTime() - new Date(cur.startedAt).getTime()) / 1000);
+    }
+  }
+  if (cur) groups.push(cur);
+  // Retourner du plus récent au plus ancien
+  return groups.reverse();
+}
+
+// ===========================================================================
+// Métriques agrégées par workout
+// ===========================================================================
+
+export interface WorkoutMetrics {
+  totalVolume: number;
+  totalSets: number;
+  totalReps: number;
+  totalDurationSec: number;  // somme des durées de sets en mode time
+  maxWeight: number;
+  uniqueExercises: number;
+  avgRpe: number | null;
+}
+
+export function workoutMetrics(workout: GroupedWorkout): WorkoutMetrics {
+  let totalVolume = 0;
+  let totalReps = 0;
+  let totalDurationSec = 0;
+  let maxWeight = 0;
+  let rpeSum = 0;
+  let rpeCount = 0;
+  const exos = new Set<string>();
+
+  for (const s of workout.sets) {
+    totalVolume += s.weight * s.reps;
+    totalReps += s.reps;
+    totalDurationSec += s.duration || 0;
+    if (s.weight > maxWeight) maxWeight = s.weight;
+    if (s.exerciseName) exos.add(s.exerciseName);
+    else exos.add(s.exerciseId);
+    if (s.rpe != null) { rpeSum += s.rpe; rpeCount++; }
+  }
+
+  return {
+    totalVolume: Math.round(totalVolume),
+    totalSets: workout.sets.length,
+    totalReps,
+    totalDurationSec,
+    maxWeight,
+    uniqueExercises: exos.size,
+    avgRpe: rpeCount > 0 ? Math.round((rpeSum / rpeCount) * 10) / 10 : null,
+  };
+}
+
+// ===========================================================================
+// Delta de volume entre 2 workouts (en %, signed)
+// ===========================================================================
+
+export function volumeDeltaPct(current: GroupedWorkout, previous: GroupedWorkout | undefined): number | null {
+  if (!previous) return null;
+  const cur = workoutMetrics(current).totalVolume;
+  const prev = workoutMetrics(previous).totalVolume;
+  if (prev === 0) return null;
+  return Math.round(((cur - prev) / prev) * 100);
+}
+
+// ===========================================================================
+// Trouve le workout précédent de la même séance (même programId+sessionId)
+// ===========================================================================
+
+export function findPreviousWorkout(
+  workouts: GroupedWorkout[],
+  currentId: string,
+): GroupedWorkout | undefined {
+  const idx = workouts.findIndex(w => w.id === currentId);
+  if (idx < 0) return undefined;
+  const current = workouts[idx];
+  // workouts est trié desc → suivant = précédent dans le temps
+  for (let i = idx + 1; i < workouts.length; i++) {
+    if (workouts[i].programId === current.programId && workouts[i].sessionId === current.sessionId) {
+      return workouts[i];
+    }
+  }
+  return undefined;
+}
+
+// ===========================================================================
+// Groupe les sets d un workout par exoName (clé stable) avec setIndex ordered
+// ===========================================================================
+
+export interface ExerciseInWorkout {
+  exerciseName: string;
+  exerciseId: string;
+  setType?: string;
+  mode: string;
+  sets: WorkoutHistory[]; // tris par setIndex ASC puis completedAt ASC
+}
+
+export function exercisesInWorkout(workout: GroupedWorkout, programs: Program[]): ExerciseInWorkout[] {
+  const byKey = new Map<string, ExerciseInWorkout>();
+  for (const s of workout.sets) {
+    const name = s.exerciseName || getExerciseName(programs, s.exerciseId);
+    const key = name;
+    if (!byKey.has(key)) {
+      byKey.set(key, {
+        exerciseName: name,
+        exerciseId: s.exerciseId,
+        setType: s.setType,
+        mode: getExerciseMode(programs, s.exerciseId),
+        sets: [],
+      });
+    }
+    byKey.get(key)!.sets.push(s);
+  }
+  // Tri intra-exo par setIndex (1, 2, 3) puis date
+  byKey.forEach(ex => {
+    ex.sets.sort((a, b) => (a.setIndex || 0) - (b.setIndex || 0) || a.completedAt.localeCompare(b.completedAt));
+  });
+  return Array.from(byKey.values());
+}
