@@ -5,6 +5,21 @@ import { Input } from '@/components/ui/input';
 import { relativeDate, getExerciseMode, matchedSeriesDeltaPct } from './historyHelpers';
 import { LineChart, Line, ResponsiveContainer, XAxis, YAxis, Tooltip } from 'recharts';
 
+// Palette pour les courbes par setIndex (S1, S2, …). Ordonnée chaud → froid
+// pour qu une visualisation "S1 plus chaud" rappelle "set principal".
+const SERIES_COLORS = [
+  'hsl(20 90% 58%)',   // S1 — orange (primary)
+  'hsl(45 90% 55%)',   // S2 — jaune
+  'hsl(155 65% 50%)',  // S3 — teal
+  'hsl(195 75% 55%)',  // S4 — cyan
+  'hsl(225 75% 65%)',  // S5 — bleu
+  'hsl(275 65% 65%)',  // S6 — violet
+  'hsl(320 70% 60%)',  // S7 — magenta
+  'hsl(0 0% 60%)',     // S8+ — gris
+];
+const colorFor = (idx: number) => SERIES_COLORS[Math.min(idx - 1, SERIES_COLORS.length - 1)];
+
+
 interface ExerciseProgressListProps {
   history: WorkoutHistory[];
   programs: Program[];
@@ -15,8 +30,15 @@ interface ExoStats {
   mode: string;
   setType: string;
   lastDate: string;
-  // Série temporelle des best set par séance (+ tous les sets du jour pour calcul delta matched)
-  timeline: Array<{ date: string; ts: number; weight: number; reps: number; volume: number; duration: number; allSets: WorkoutHistory[] }>;
+  // Série temporelle: 1 point par jour, weight_<idx> par setIndex (+ champs aggregés)
+  timeline: Array<{
+    date: string; ts: number;
+    weight: number; reps: number; volume: number; duration: number;
+    allSets: WorkoutHistory[];
+    [perSet: `w${number}`]: number | undefined;
+  }>;
+  // Liste des setIndex présents pour cet exo (pour rendre N lignes)
+  setIndexes: number[];
 }
 
 function typeBadge(t: string) {
@@ -66,6 +88,17 @@ export function ExerciseProgressList({ history, programs }: ExerciseProgressList
           const bestAtMaxWeight = sets
             .filter(x => x.weight === maxWeight)
             .reduce((b, x) => (x.reps > b.reps ? x : b), sets.filter(x => x.weight === maxWeight)[0]);
+          // Construit le point + 1 valeur par setIndex (w1, w2, w3, ...)
+          //   = poids de la série SI ce setIndex (pour comparer S1 N vs S1 N-1, etc.)
+          const perSet: Record<string, number> = {};
+          for (const s of sets) {
+            const idx = s.setIndex;
+            if (typeof idx !== 'number' || idx < 1) continue;
+            // Si plusieurs entries au même setIndex le même jour, prendre la plus lourde
+            const cur = perSet[`w${idx}`];
+            const val = mode === 'time' ? (s.duration || 0) : s.weight;
+            if (cur === undefined || val > cur) perSet[`w${idx}`] = val;
+          }
           return {
             date: day,
             ts: new Date(day + 'T00:00:00').getTime(),
@@ -73,13 +106,21 @@ export function ExerciseProgressList({ history, programs }: ExerciseProgressList
             reps: bestAtMaxWeight?.reps || 0,
             volume: sets.reduce((s, x) => s + x.weight * x.reps, 0),
             duration: maxDuration,
-            allSets: sets,  // pour le calcul matched delta
+            allSets: sets,
+            ...perSet,
           };
         });
 
       const lastDate = entries.reduce((max, x) => x.completedAt > max ? x.completedAt : max, entries[0].completedAt);
 
-      out.push({ name, mode, setType, lastDate, timeline });
+      // Liste tri ASC des setIndex distincts présents pour cet exo
+      const idxSet = new Set<number>();
+      for (const e of entries) {
+        if (typeof e.setIndex === 'number' && e.setIndex >= 1) idxSet.add(e.setIndex);
+      }
+      const setIndexes = Array.from(idxSet).sort((a, b) => a - b);
+
+      out.push({ name, mode, setType, lastDate, timeline, setIndexes });
     });
 
     return out.sort((a, b) => b.lastDate.localeCompare(a.lastDate));
@@ -129,61 +170,73 @@ export function ExerciseProgressList({ history, programs }: ExerciseProgressList
 
               {s.timeline.length >= 2 && (
                 <>
-                  {!isTime && (
-                    <div className="flex items-center gap-3 text-[10px] text-muted-foreground/80 mb-1 px-1">
-                      <span className="flex items-center gap-1">
-                        <span className="inline-block w-2.5 h-0.5 bg-primary" /> Charge
+                  {/* Légende: une pastille par setIndex présent + Volume */}
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] text-muted-foreground/80 mb-1 px-1">
+                    {s.setIndexes.map(idx => (
+                      <span key={idx} className="flex items-center gap-1">
+                        <span className="inline-block w-2.5 h-0.5" style={{ background: colorFor(idx) }} />
+                        S{idx}
                       </span>
+                    ))}
+                    {!isTime && (
                       <span className="flex items-center gap-1">
-                        <span className="inline-block w-2.5 h-0.5" style={{ background: 'hsl(30 95% 60%)', borderTop: '1px dashed hsl(30 95% 60%)', height: 0 }} /> Volume
+                        <span className="inline-block w-2.5 h-px border-t border-dashed" style={{ borderColor: 'hsl(0 0% 50%)' }} />
+                        Volume
                       </span>
-                    </div>
-                  )}
-                <div className="h-16 -mx-1 mb-2">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={s.timeline} margin={{ top: 4, right: 4, bottom: 4, left: 4 }}>
-                      <XAxis dataKey="ts" type="number" domain={['dataMin', 'dataMax']} hide />
-                      <YAxis yAxisId="left" hide domain={['dataMin - 5', 'dataMax + 5']} />
-                      {!isTime && <YAxis yAxisId="right" hide orientation="right" domain={['dataMin', 'dataMax']} />}
-                      <Tooltip
-                        contentStyle={{
-                          background: 'hsl(var(--card))',
-                          border: '1px solid hsl(var(--border))',
-                          borderRadius: 8,
-                          fontSize: 11,
-                        }}
-                        labelFormatter={(ts: number) => new Date(ts).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: '2-digit' })}
-                        formatter={(v: number, name: string) => {
-                          if (name === 'Volume') return [`${v} kg`, name];
-                          return [isTime ? `${v}s` : `${v}kg`, isTime ? 'Durée' : 'Charge'];
-                        }}
-                      />
-                      <Line
-                        yAxisId="left"
-                        type="monotone"
-                        dataKey={isTime ? 'duration' : 'weight'}
-                        name={isTime ? 'Durée' : 'Charge'}
-                        stroke="hsl(var(--primary))"
-                        strokeWidth={2}
-                        dot={{ r: 2.5 }}
-                        activeDot={{ r: 4 }}
-                      />
-                      {!isTime && (
-                        <Line
-                          yAxisId="right"
-                          type="monotone"
-                          dataKey="volume"
-                          name="Volume"
-                          stroke="hsl(30 95% 60%)"
-                          strokeWidth={1.5}
-                          strokeDasharray="3 3"
-                          dot={{ r: 1.5 }}
-                          activeDot={{ r: 3 }}
+                    )}
+                  </div>
+                  <div className="h-20 -mx-1 mb-2">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={s.timeline} margin={{ top: 4, right: 4, bottom: 4, left: 4 }}>
+                        <XAxis dataKey="ts" type="number" domain={['dataMin', 'dataMax']} hide />
+                        <YAxis yAxisId="left" hide domain={['dataMin - 5', 'dataMax + 5']} />
+                        {!isTime && <YAxis yAxisId="right" hide orientation="right" domain={['dataMin', 'dataMax']} />}
+                        <Tooltip
+                          contentStyle={{
+                            background: 'hsl(var(--card))',
+                            border: '1px solid hsl(var(--border))',
+                            borderRadius: 8,
+                            fontSize: 11,
+                          }}
+                          labelFormatter={(ts: number) => new Date(ts).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: '2-digit' })}
+                          formatter={(v: number, name: string) => {
+                            if (name === 'Volume') return [`${v} kg`, name];
+                            return [isTime ? `${v}s` : `${v}kg`, name];
+                          }}
                         />
-                      )}
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
+                        {/* Une ligne par setIndex présent */}
+                        {s.setIndexes.map(idx => (
+                          <Line
+                            key={idx}
+                            yAxisId="left"
+                            type="monotone"
+                            dataKey={`w${idx}`}
+                            name={`S${idx}`}
+                            stroke={colorFor(idx)}
+                            strokeWidth={2}
+                            dot={{ r: 2 }}
+                            activeDot={{ r: 4 }}
+                            connectNulls
+                            isAnimationActive={false}
+                          />
+                        ))}
+                        {!isTime && (
+                          <Line
+                            yAxisId="right"
+                            type="monotone"
+                            dataKey="volume"
+                            name="Volume"
+                            stroke="hsl(0 0% 50%)"
+                            strokeWidth={1}
+                            strokeDasharray="3 3"
+                            dot={{ r: 1 }}
+                            activeDot={{ r: 2.5 }}
+                            isAnimationActive={false}
+                          />
+                        )}
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
                 </>
               )}
 
