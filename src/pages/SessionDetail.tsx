@@ -24,6 +24,18 @@ export default function SessionDetail() {
   const workouts = useMemo(() => groupIntoWorkouts(history), [history]);
   const workout = useMemo(() => workouts.find(w => w.id === decodeURIComponent(id || '')), [workouts, id]);
 
+  // Memoize prev + map par exo AVANT tout early return (rules of hooks)
+  const prevWorkout = useMemo(
+    () => workout ? findPreviousWorkout(workouts, workout.id) : undefined,
+    [workouts, workout]
+  );
+  const prevExosByName = useMemo(() => {
+    if (!prevWorkout) return new Map<string, ReturnType<typeof exercisesInWorkout>[number]>();
+    const m = new Map<string, ReturnType<typeof exercisesInWorkout>[number]>();
+    for (const e of exercisesInWorkout(prevWorkout, programs)) m.set(e.exerciseName, e);
+    return m;
+  }, [prevWorkout, programs]);
+
   if (!workout) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4 p-6">
@@ -34,7 +46,7 @@ export default function SessionDetail() {
   }
 
   const m = workoutMetrics(workout);
-  const prev = findPreviousWorkout(workouts, workout.id);
+  const prev = prevWorkout;
   const delta = volumeDeltaPct(workout, prev);
   const exos = exercisesInWorkout(workout, programs);
 
@@ -44,14 +56,6 @@ export default function SessionDetail() {
   const TrendIcon = delta === null ? Minus : delta > 0 ? TrendingUp : delta < 0 ? TrendingDown : Minus;
   const trendColor = delta === null ? 'text-muted-foreground'
     : delta > 0 ? 'text-success' : delta < 0 ? 'text-destructive' : 'text-muted-foreground';
-
-  // Map exo précédent pour delta par exo
-  const prevExosByName = useMemo(() => {
-    if (!prev) return new Map();
-    const m = new Map<string, ReturnType<typeof exercisesInWorkout>[number]>();
-    for (const e of exercisesInWorkout(prev, programs)) m.set(e.exerciseName, e);
-    return m;
-  }, [prev, programs]);
 
   return (
     <div className="min-h-screen bg-background">
