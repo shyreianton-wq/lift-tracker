@@ -123,11 +123,23 @@ export function ExerciseProgressList({ history, programs }: ExerciseProgressList
               </div>
 
               {s.timeline.length >= 2 && (
+                <>
+                  {!isTime && (
+                    <div className="flex items-center gap-3 text-[10px] text-muted-foreground/80 mb-1 px-1">
+                      <span className="flex items-center gap-1">
+                        <span className="inline-block w-2.5 h-0.5 bg-primary" /> Charge
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <span className="inline-block w-2.5 h-0.5" style={{ background: 'hsl(30 95% 60%)', borderTop: '1px dashed hsl(30 95% 60%)', height: 0 }} /> Volume
+                      </span>
+                    </div>
+                  )}
                 <div className="h-16 -mx-1 mb-2">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={s.timeline} margin={{ top: 4, right: 4, bottom: 4, left: 4 }}>
                       <XAxis dataKey="ts" type="number" domain={['dataMin', 'dataMax']} hide />
-                      <YAxis hide domain={['dataMin - 5', 'dataMax + 5']} />
+                      <YAxis yAxisId="left" hide domain={['dataMin - 5', 'dataMax + 5']} />
+                      {!isTime && <YAxis yAxisId="right" hide orientation="right" domain={['dataMin', 'dataMax']} />}
                       <Tooltip
                         contentStyle={{
                           background: 'hsl(var(--card))',
@@ -136,19 +148,38 @@ export function ExerciseProgressList({ history, programs }: ExerciseProgressList
                           fontSize: 11,
                         }}
                         labelFormatter={(ts: number) => new Date(ts).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: '2-digit' })}
-                        formatter={(v: number) => [isTime ? `${v}s` : `${v}kg`, isTime ? 'Durée' : 'Charge']}
+                        formatter={(v: number, name: string) => {
+                          if (name === 'Volume') return [`${v} kg`, name];
+                          return [isTime ? `${v}s` : `${v}kg`, isTime ? 'Durée' : 'Charge'];
+                        }}
                       />
                       <Line
+                        yAxisId="left"
                         type="monotone"
                         dataKey={isTime ? 'duration' : 'weight'}
+                        name={isTime ? 'Durée' : 'Charge'}
                         stroke="hsl(var(--primary))"
                         strokeWidth={2}
                         dot={{ r: 2.5 }}
                         activeDot={{ r: 4 }}
                       />
+                      {!isTime && (
+                        <Line
+                          yAxisId="right"
+                          type="monotone"
+                          dataKey="volume"
+                          name="Volume"
+                          stroke="hsl(30 95% 60%)"
+                          strokeWidth={1.5}
+                          strokeDasharray="3 3"
+                          dot={{ r: 1.5 }}
+                          activeDot={{ r: 3 }}
+                        />
+                      )}
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
+                </>
               )}
 
               <div className="flex items-center justify-between text-xs tabular-nums">
