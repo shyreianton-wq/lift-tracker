@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import ProgramDetail from "./pages/ProgramDetail";
 import TrainingSession from "./pages/TrainingSession";
 import History from "./pages/History";
+import SessionDetail from "./pages/SessionDetail";
 import NotFound from "./pages/NotFound";
 import Admin from "./pages/Admin";
 
