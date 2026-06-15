@@ -3,7 +3,7 @@ import { Search, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { WorkoutHistory, Program } from '@/types/workout';
 import { Input } from '@/components/ui/input';
 import { relativeDate, getExerciseMode, matchedSeriesDeltaPct } from './historyHelpers';
-import { LineChart, Line, ResponsiveContainer, YAxis, Tooltip } from 'recharts';
+import { LineChart, Line, ResponsiveContainer, XAxis, YAxis, Tooltip } from 'recharts';
 
 interface ExerciseProgressListProps {
   history: WorkoutHistory[];
@@ -16,7 +16,7 @@ interface ExoStats {
   setType: string;
   lastDate: string;
   // Série temporelle des best set par séance (+ tous les sets du jour pour calcul delta matched)
-  timeline: Array<{ date: string; weight: number; reps: number; volume: number; duration: number; allSets: WorkoutHistory[] }>;
+  timeline: Array<{ date: string; ts: number; weight: number; reps: number; volume: number; duration: number; allSets: WorkoutHistory[] }>;
 }
 
 function typeBadge(t: string) {
@@ -63,6 +63,7 @@ export function ExerciseProgressList({ history, programs }: ExerciseProgressList
           );
           return {
             date: day,
+            ts: new Date(day + 'T00:00:00').getTime(),
             weight: best.weight,
             reps: best.reps,
             volume: sets.reduce((s, x) => s + x.weight * x.reps, 0),
@@ -124,7 +125,8 @@ export function ExerciseProgressList({ history, programs }: ExerciseProgressList
               {s.timeline.length >= 2 && (
                 <div className="h-16 -mx-1 mb-2">
                   <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={s.timeline}>
+                    <LineChart data={s.timeline} margin={{ top: 4, right: 4, bottom: 4, left: 4 }}>
+                      <XAxis dataKey="ts" type="number" domain={['dataMin', 'dataMax']} hide />
                       <YAxis hide domain={['dataMin - 5', 'dataMax + 5']} />
                       <Tooltip
                         contentStyle={{
@@ -133,7 +135,7 @@ export function ExerciseProgressList({ history, programs }: ExerciseProgressList
                           borderRadius: 8,
                           fontSize: 11,
                         }}
-                        labelFormatter={(d) => new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })}
+                        labelFormatter={(ts: number) => new Date(ts).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: '2-digit' })}
                         formatter={(v: number) => [isTime ? `${v}s` : `${v}kg`, isTime ? 'Durée' : 'Charge']}
                       />
                       <Line
