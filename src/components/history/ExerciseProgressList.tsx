@@ -56,18 +56,23 @@ export function ExerciseProgressList({ history, programs }: ExerciseProgressList
       const timeline = Array.from(byDay.entries())
         .sort((a, b) => a[0].localeCompare(b[0]))
         .map(([day, sets]) => {
-          const best = sets.reduce((b, x) =>
-            mode === 'time' ? ((x.duration || 0) > (b.duration || 0) ? x : b)
-                           : (x.weight * x.reps > b.weight * b.reps ? x : b),
-            sets[0]
-          );
+          // Charge tracée = poids max sur toutes les séries du jour
+          //   (le plus lourd levé, indépendamment des reps)
+          // Volume tracé = somme weight × reps sur toutes les séries du jour
+          // Durée (mode time) = max sur toutes les séries
+          const maxWeight = sets.reduce((m, x) => Math.max(m, x.weight || 0), 0);
+          const maxDuration = sets.reduce((m, x) => Math.max(m, x.duration || 0), 0);
+          // Reps tracées = reps de la série qui a fait le poids max (tie-break: plus de reps)
+          const bestAtMaxWeight = sets
+            .filter(x => x.weight === maxWeight)
+            .reduce((b, x) => (x.reps > b.reps ? x : b), sets.filter(x => x.weight === maxWeight)[0]);
           return {
             date: day,
             ts: new Date(day + 'T00:00:00').getTime(),
-            weight: best.weight,
-            reps: best.reps,
+            weight: maxWeight,
+            reps: bestAtMaxWeight?.reps || 0,
             volume: sets.reduce((s, x) => s + x.weight * x.reps, 0),
-            duration: best.duration || 0,
+            duration: maxDuration,
             allSets: sets,  // pour le calcul matched delta
           };
         });
