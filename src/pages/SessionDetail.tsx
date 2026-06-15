@@ -7,7 +7,7 @@ import { fr } from 'date-fns/locale';
 import { useWorkout } from '@/contexts/WorkoutContext';
 import {
   groupIntoWorkouts, workoutMetrics, findPreviousWorkout,
-  volumeDeltaPct, exercisesInWorkout, formatDuration, relativeDate,
+  volumeDeltaPct, matchedSeriesDeltaPct, exercisesInWorkout, formatDuration, relativeDate,
 } from '@/components/history/historyHelpers';
 
 function typeBadge(t?: string) {
@@ -121,9 +121,7 @@ export default function SessionDetail() {
               if (idx > 0) prevByIdx.set(idx, ps);
             }
 
-            const curVol = ex.sets.reduce((s, x) => s + x.weight * x.reps, 0);
-            const prevVol = prevEx ? prevEx.sets.reduce((s, x) => s + x.weight * x.reps, 0) : 0;
-            const exDelta = prevVol > 0 ? Math.round(((curVol - prevVol) / prevVol) * 100) : null;
+            const exDelta = prevEx ? matchedSeriesDeltaPct(ex.sets, prevEx.sets) : null;
             const isTime = ex.mode === 'time';
 
             return (

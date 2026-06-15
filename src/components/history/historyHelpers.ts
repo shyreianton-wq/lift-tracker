@@ -131,15 +131,56 @@ export function workoutMetrics(workout: GroupedWorkout): WorkoutMetrics {
 }
 
 // ===========================================================================
-// Delta de volume entre 2 workouts (en %, signed)
+// Delta entre 2 workouts basé sur les paires (exoName, setIndex) communes.
+// Évite de pénaliser "moins de sets / moins de mini-séries myo-rep" alors que
+// la charge a été maintenue ou augmentée.
+//
+// Pour chaque paire commune, ratio = metric(current) / metric(previous), où
+// metric = weight×reps si > 0 sinon duration. Delta = moyenne(ratios) - 1.
 // ===========================================================================
 
 export function volumeDeltaPct(current: GroupedWorkout, previous: GroupedWorkout | undefined): number | null {
   if (!previous) return null;
-  const cur = workoutMetrics(current).totalVolume;
-  const prev = workoutMetrics(previous).totalVolume;
-  if (prev === 0) return null;
-  return Math.round(((cur - prev) / prev) * 100);
+  return matchedSeriesDeltaPct(current.sets, previous.sets);
+}
+
+// Generic helper — opère sur des listes de sets (pour réutilisation par-exo).
+export function matchedSeriesDeltaPct(
+  currentSets: WorkoutHistory[],
+  previousSets: WorkoutHistory[],
+): number | null {
+  // Index la previous par clé exoName__setIndex
+  const prevByKey = new Map<string, WorkoutHistory>();
+  for (const p of previousSets) {
+    if (p.setIndex == null) continue;
+    const name = p.exerciseName || p.exerciseId;
+    prevByKey.set(name + '__' + p.setIndex, p);
+  }
+  if (prevByKey.size === 0) return null;
+
+  const ratios: number[] = [];
+  for (const c of currentSets) {
+    if (c.setIndex == null) continue;
+    const name = c.exerciseName || c.exerciseId;
+    const prev = prevByKey.get(name + '__' + c.setIndex);
+    if (!prev) continue;
+
+    const curVol = c.weight * c.reps;
+    const prevVol = prev.weight * prev.reps;
+    if (prevVol > 0 && curVol > 0) {
+      ratios.push(curVol / prevVol);
+      continue;
+    }
+    const curDur = c.duration || 0;
+    const prevDur = prev.duration || 0;
+    if (prevDur > 0 && curDur > 0) {
+      ratios.push(curDur / prevDur);
+    }
+  }
+
+  if (ratios.length === 0) return null;
+  const avg = ratios.reduce((s, r) => s + r, 0) / ratios.length;
+  return Math.round((avg - 1) * 100);
 }
 
 // ===========================================================================

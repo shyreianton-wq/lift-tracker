@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { Search, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { WorkoutHistory, Program } from '@/types/workout';
 import { Input } from '@/components/ui/input';
-import { relativeDate, getExerciseMode } from './historyHelpers';
+import { relativeDate, getExerciseMode, matchedSeriesDeltaPct } from './historyHelpers';
 import { LineChart, Line, ResponsiveContainer, YAxis, Tooltip } from 'recharts';
 
 interface ExerciseProgressListProps {
@@ -15,8 +15,8 @@ interface ExoStats {
   mode: string;
   setType: string;
   lastDate: string;
-  // Série temporelle des best set par séance
-  timeline: Array<{ date: string; weight: number; reps: number; volume: number; duration: number }>;
+  // Série temporelle des best set par séance (+ tous les sets du jour pour calcul delta matched)
+  timeline: Array<{ date: string; weight: number; reps: number; volume: number; duration: number; allSets: WorkoutHistory[] }>;
 }
 
 function typeBadge(t: string) {
@@ -67,6 +67,7 @@ export function ExerciseProgressList({ history, programs }: ExerciseProgressList
             reps: best.reps,
             volume: sets.reduce((s, x) => s + x.weight * x.reps, 0),
             duration: best.duration || 0,
+            allSets: sets,  // pour le calcul matched delta
           };
         });
 
@@ -105,9 +106,7 @@ export function ExerciseProgressList({ history, programs }: ExerciseProgressList
           const prev = s.timeline[s.timeline.length - 2];
           const isTime = s.mode === 'time';
 
-          const lastMetric = isTime ? last.duration : last.weight * last.reps;
-          const prevMetric = prev ? (isTime ? prev.duration : prev.weight * prev.reps) : 0;
-          const delta = prevMetric > 0 ? Math.round(((lastMetric - prevMetric) / prevMetric) * 100) : null;
+          const delta = prev ? matchedSeriesDeltaPct(last.allSets, prev.allSets) : null;
           const TrendIcon = delta === null ? Minus : delta > 0 ? TrendingUp : delta < 0 ? TrendingDown : Minus;
           const trendColor = delta === null ? 'text-muted-foreground'
             : delta > 0 ? 'text-success' : delta < 0 ? 'text-destructive' : 'text-muted-foreground';
