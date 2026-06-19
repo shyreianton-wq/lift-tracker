@@ -22,7 +22,7 @@ export function RestOverlay({
   open, durationSec, onClose,
   exerciseName, setLabel, setType, previousPerf,
 }: RestOverlayProps) {
-  const timer = useTimer({ initialSeconds: durationSec, onComplete: undefined });
+  const timer = useTimer({ initialSeconds: durationSec, onComplete: undefined, allowOvertime: true });
 
   // Re-cale la durée et démarre à chaque ouverture (cas myo-rep: re-relance entre mini-séries)
   useEffect(() => {
@@ -35,8 +35,9 @@ export function RestOverlay({
   }, [open, durationSec]);
 
   const remaining = timer.seconds;
-  const progress = useMemo(() => durationSec > 0 ? (remaining / durationSec) * 100 : 0, [remaining, durationSec]);
+  const progress = useMemo(() => durationSec > 0 ? Math.max(0, (remaining / durationSec) * 100) : 0, [remaining, durationSec]);
   const isUrgent = remaining > 0 && remaining <= 5;
+  const isOvertime = remaining < 0;
 
   const typeBadge = setType === 'myo-rep' ? { label: 'MYO', color: 'bg-orange-500/30 text-orange-300' }
                   : setType === 'hypertrophie' ? { label: 'HYP', color: 'bg-blue-500/30 text-blue-300' }
@@ -71,7 +72,10 @@ export function RestOverlay({
               initial={{ scale: 0.96 }}
               animate={{ scale: 1 }}
               transition={{ duration: 0.15 }}
-              className={`font-mono font-black tabular-nums tracking-tight ${isUrgent ? 'text-red-400' : 'text-white'}`}
+              role="button"
+              aria-label="Reprendre (enregistre le temps de repos)"
+              onClick={() => { timer.pause(); onClose(); }}
+              className={`font-mono font-black tabular-nums tracking-tight cursor-pointer select-none ${isOvertime ? 'text-red-500' : isUrgent ? 'text-red-400' : 'text-white'}`}
               style={{ fontSize: 'min(36vw, 220px)', lineHeight: 1 }}
             >
               {timer.formattedTime}
@@ -80,9 +84,12 @@ export function RestOverlay({
             {/* Barre de progression visuelle */}
             <div className="w-full max-w-md mt-6 h-2 rounded-full bg-white/10 overflow-hidden">
               <div
-                className={`h-full transition-all duration-300 ${isUrgent ? 'bg-red-400' : 'bg-primary'}`}
+                className={`h-full transition-all duration-300 ${isOvertime ? 'bg-red-500' : isUrgent ? 'bg-red-400' : 'bg-primary'}`}
                 style={{ width: `${progress}%` }}
               />
+            </div>
+            <div className="mt-3 text-xs text-white/40">
+              {isOvertime ? 'Repos dépassé — tape le chrono pour reprendre' : 'Tape le chrono quand tu reprends'}
             </div>
 
             {/* Contexte de la série en cours */}

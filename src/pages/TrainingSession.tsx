@@ -11,7 +11,7 @@ import { BottomActions } from '@/components/training/BottomActions';
 import { RestOverlay } from '@/components/training/RestOverlay';
 import { SessionMapSheet } from '@/components/training/SessionMapSheet';
 import { SeriesStrip } from '@/components/training/SeriesStrip';
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useRef } from "react";
 import { WorkoutSet, Exercise, ExerciseMode, SetType } from '@/types/workout';
 import { RenameOrReplaceDialog } from '@/components/RenameOrReplaceDialog';
 import { hasHistoryForExerciseName, isExerciseNameKnown } from '@/lib/exercise-utils';
@@ -31,7 +31,7 @@ export default function TrainingSession() {
   const navigate = useNavigate();
   const {
     programs, history, activeWorkout,
-    completeSet, endWorkout, getLastPerformance, getPreviousSessionForExercise,
+    completeSet, setHistoryRest, endWorkout, getLastPerformance, getPreviousSessionForExercise,
     updateProgram, resolveExercises, updateActiveWorkout,
     migrateHistoryExerciseName,
   } = useWorkout();
@@ -39,6 +39,15 @@ export default function TrainingSession() {
   // ===== Local state (transient session state) =====
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [restOpen, setRestOpen] = useState(false);
+  // Repos en cours : série à laquelle rattacher le temps de repos réel (wall-clock).
+  const restCtxRef = useRef<{ entryId: string; startedAt: number } | null>(null);
+  const recordRest = () => {
+    const ctx = restCtxRef.current;
+    if (!ctx) return;
+    const restSec = Math.round((Date.now() - ctx.startedAt) / 1000);
+    if (restSec > 0 && restSec < 3600) setHistoryRest(ctx.entryId, restSec);
+    restCtxRef.current = null;
+  };
   const [mapOpen, setMapOpen] = useState(false);
   const [exerciseSets, setExerciseSets] = useState<Record<string, Record<string, WorkoutSet>>>({});
   const [showCompleteModal, setShowCompleteModal] = useState(false);
@@ -383,7 +392,8 @@ export default function TrainingSession() {
     const setIdx = matchedExercise ? matchedExercise.sets.findIndex(s => s.id === setId) + 1 : undefined;
     // Use the real exercise ID for history (important for replacements)
     const historyExerciseId = matchedExercise?._historyId || matchedExercise?._resolvedExerciseId || exerciseId;
-    completeSet(historyExerciseId, setId, set, exerciseName, setIdx);
+    recordRest(); // clôt le repos de la série précédente s'il y en avait un
+    const entryId = completeSet(historyExerciseId, setId, set, exerciseName, setIdx);
 
     if (!currentStep) return;
 
@@ -392,6 +402,7 @@ export default function TrainingSession() {
       if (exerciseId === exA.id) {
         setSupersetActiveIdx(1);
       } else if (exerciseId === exB.id) {
+        restCtxRef.current = { entryId, startedAt: Date.now() };
         setTimerKey(k => k + 1); openRest();
         const allADone = exA.sets.every(s => (s.id === setId && exerciseId === exA.id) || s.isCompleted || !!exerciseSets[exA.id]?.[s.id]?.isCompleted);
         const allBDone = exB.sets.every(s => s.id === setId || s.isCompleted || !!exerciseSets[exB.id]?.[s.id]?.isCompleted);
@@ -402,6 +413,7 @@ export default function TrainingSession() {
         }
       }
     } else {
+      restCtxRef.current = { entryId, startedAt: Date.now() };
       setTimerKey(k => k + 1); openRest();
       const ex = currentStep.exercises[0];
       if (exerciseId === ex.id) {
@@ -413,7 +425,7 @@ export default function TrainingSession() {
     }
   };
 
-  const handleEndWorkout = () => { endWorkout(); navigate('/'); };
+  const handleEndWorkout = () => { recordRest(); endWorkout(); navigate('/'); };
   const goNext = () => { if (currentStepIndex < navSteps.length - 1) { setCurrentStepIndex(i => i + 1); setSupersetActiveIdx(0); } };
   const goPrev = () => { if (currentStepIndex > 0) { setCurrentStepIndex(i => i - 1); setSupersetActiveIdx(0); } };
 
@@ -590,7 +602,7 @@ export default function TrainingSession() {
       <RestOverlay
         open={restOpen}
         durationSec={timerDuration}
-        onClose={() => setRestOpen(false)}
+        onClose={() => { recordRest(); setRestOpen(false); }}
         exerciseName={activeExercise?.name}
         setLabel={activeExercise ? `Série ${(activeSetIndex >= 0 ? activeSetIndex : activeExercise.sets.length - 1) + 1}/${activeExercise.sets.length}` : undefined}
         setType={activeExercise?.sets[Math.max(0, activeSetIndex)]?.type}

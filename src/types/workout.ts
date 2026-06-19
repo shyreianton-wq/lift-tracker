@@ -86,6 +86,7 @@ export interface WorkoutHistory {
   completedAt: string;
   setIndex?: number;
   myoRestPauseCount?: number;
+  restSec?: number; // repos réel pris APRÈS cette série (s), dépassement inclus
 }
 
 export interface ActiveWorkout {

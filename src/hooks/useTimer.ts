@@ -3,9 +3,10 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 interface UseTimerOptions {
   initialSeconds?: number;
   onComplete?: () => void;
+  allowOvertime?: boolean; // après 0, continue à compter en négatif (overtime)
 }
 
-export function useTimer({ initialSeconds = 90, onComplete }: UseTimerOptions = {}) {
+export function useTimer({ initialSeconds = 90, onComplete, allowOvertime = false }: UseTimerOptions = {}) {
   const [seconds, setSeconds] = useState(initialSeconds);
   const [isRunning, setIsRunning] = useState(false);
   const [duration, setDurationState] = useState(initialSeconds);
@@ -14,6 +15,7 @@ export function useTimer({ initialSeconds = 90, onComplete }: UseTimerOptions = 
   const pausedRemainingRef = useRef<number>(initialSeconds);
   const onCompleteRef = useRef(onComplete);
   const audioCtxRef = useRef<AudioContext | null>(null);
+  const beepedRef = useRef(false);
 
   onCompleteRef.current = onComplete;
 
@@ -83,15 +85,19 @@ export function useTimer({ initialSeconds = 90, onComplete }: UseTimerOptions = 
 
       intervalRef.current = setInterval(() => {
         const elapsed = (Date.now() - startedAtRef.current!) / 1000;
-        const remaining = Math.max(0, Math.round(startRemaining - elapsed));
+        const raw = startRemaining - elapsed;
+        const remaining = allowOvertime ? Math.round(raw) : Math.max(0, Math.round(raw));
         setSeconds(remaining);
 
-        if (remaining <= 0) {
-          setIsRunning(false);
-          pausedRemainingRef.current = 0;
+        if (raw <= 0 && !beepedRef.current) {
+          beepedRef.current = true;
           playBeep();
           onCompleteRef.current?.();
-          if (intervalRef.current) clearInterval(intervalRef.current);
+          if (!allowOvertime) {
+            setIsRunning(false);
+            pausedRemainingRef.current = 0;
+            if (intervalRef.current) clearInterval(intervalRef.current);
+          }
         }
       }, 250);
     }
@@ -99,25 +105,25 @@ export function useTimer({ initialSeconds = 90, onComplete }: UseTimerOptions = 
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [isRunning, playBeep]);
+  }, [isRunning, playBeep, allowOvertime]);
 
   const start = useCallback(() => {
     warmAudio();
-    if (pausedRemainingRef.current <= 0) {
+    if (!allowOvertime && pausedRemainingRef.current <= 0) {
       pausedRemainingRef.current = duration;
       setSeconds(duration);
     }
     setIsRunning(true);
-  }, [duration, warmAudio]);
+  }, [duration, warmAudio, allowOvertime]);
 
   const pause = useCallback(() => {
     warmAudio();
     if (startedAtRef.current) {
       const elapsed = (Date.now() - startedAtRef.current) / 1000;
-      pausedRemainingRef.current = Math.max(0, pausedRemainingRef.current - elapsed);
+      pausedRemainingRef.current = allowOvertime ? (pausedRemainingRef.current - elapsed) : Math.max(0, pausedRemainingRef.current - elapsed);
     }
     setIsRunning(false);
-  }, [warmAudio]);
+  }, [warmAudio, allowOvertime]);
 
   const reset = useCallback(() => {
     warmAudio();
@@ -125,6 +131,7 @@ export function useTimer({ initialSeconds = 90, onComplete }: UseTimerOptions = 
     startedAtRef.current = null;
     pausedRemainingRef.current = duration;
     setSeconds(duration);
+    beepedRef.current = false;
   }, [duration, warmAudio]);
 
   const setDuration = useCallback((newDuration: number) => {
@@ -133,12 +140,15 @@ export function useTimer({ initialSeconds = 90, onComplete }: UseTimerOptions = 
     setIsRunning(false);
     startedAtRef.current = null;
     pausedRemainingRef.current = newDuration;
+    beepedRef.current = false;
   }, []);
 
   const formatTime = useCallback((secs: number) => {
-    const mins = Math.floor(secs / 60);
-    const remainingSecs = secs % 60;
-    return `${mins}:${remainingSecs.toString().padStart(2, '0')}`;
+    const sign = secs < 0 ? '-' : '';
+    const abs = Math.abs(secs);
+    const mins = Math.floor(abs / 60);
+    const remainingSecs = abs % 60;
+    return `${sign}${mins}:${remainingSecs.toString().padStart(2, '0')}`;
   }, []);
 
   return {
