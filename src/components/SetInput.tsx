@@ -208,6 +208,7 @@ export function SetInput({ set, index, exerciseMode = 'reps', lastPerformance, p
   };
 
   return (
+    <>
     <motion.div
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
@@ -419,34 +420,34 @@ export function SetInput({ set, index, exerciseMode = 'reps', lastPerformance, p
         })()}
       </div>
 
-      {/* Validate button — fixed at bottom of viewport when this set is active, inline otherwise */}
-      {editable && (
-        isActive ? (
-          <>
-            {/* Spacer so content above isn't hidden by the fixed button on mobile */}
-            <div aria-hidden className="h-20" />
-            <div className="fixed bottom-3 left-3 right-3 z-40 pb-[env(safe-area-inset-bottom)]">
-              <Button
-                onClick={handleComplete}
-                className={`w-full h-14 transition-all text-base font-semibold shadow-lg ${set.isCompleted ? 'bg-success hover:bg-success/90' : 'btn-primary-gradient hover:opacity-90'}`}
-              >
-                <Check className="h-5 w-5 mr-2" />
-                {set.isCompleted ? 'Re-valider' : 'Valider la série'}
-              </Button>
-            </div>
-          </>
-        ) : (
-          <div className="mt-4">
-            <Button
-              onClick={handleComplete}
-              className={`w-full h-12 transition-all text-base font-semibold ${set.isCompleted ? 'bg-success hover:bg-success/90' : 'btn-primary-gradient hover:opacity-90'}`}
-            >
-              <Check className="h-5 w-5 mr-2" />
-              {set.isCompleted ? 'Re-valider' : 'Valider la série'}
-            </Button>
-          </div>
-        )
+      {/* Bouton valider inline (visible quand pas la série active — pour edit hors-actif) */}
+      {editable && !isActive && (
+        <div className="mt-4">
+          <Button
+            onClick={handleComplete}
+            className={`w-full h-12 transition-all text-base font-semibold ${set.isCompleted ? 'bg-success hover:bg-success/90' : 'btn-primary-gradient hover:opacity-90'}`}
+          >
+            <Check className="h-5 w-5 mr-2" />
+            {set.isCompleted ? 'Re-valider' : 'Valider la série'}
+          </Button>
+        </div>
       )}
     </motion.div>
+    {/* Bouton valider fixed bas-écran pour la série active — spacer en dehors du card pour ne pas l inflater */}
+    {editable && isActive && (
+      <>
+        <div aria-hidden className="h-20" />
+        <div className="fixed bottom-3 left-3 right-3 z-40 pb-[env(safe-area-inset-bottom)]">
+          <Button
+            onClick={handleComplete}
+            className={`w-full h-14 transition-all text-base font-semibold shadow-lg ${set.isCompleted ? 'bg-success hover:bg-success/90' : 'btn-primary-gradient hover:opacity-90'}`}
+          >
+            <Check className="h-5 w-5 mr-2" />
+            {set.isCompleted ? 'Re-valider' : 'Valider la série'}
+          </Button>
+        </div>
+      </>
+    )}
+    </>
   );
 }

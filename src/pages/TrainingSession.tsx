@@ -5,11 +5,12 @@ import { Button } from '@/components/ui/button';
 import { ExercisePicker } from '@/components/ExercisePicker';
 import { SessionHeader } from '@/components/training/SessionHeader';
 import { ExerciseHeader } from '@/components/training/ExerciseHeader';
-import { SeriesPills } from '@/components/training/SeriesPills';
 import { SupersetBanner } from '@/components/training/SupersetBanner';
 import { SetInputPanel } from '@/components/training/SetInputPanel';
-import { RestTimerControl } from '@/components/training/RestTimerControl';
 import { BottomActions } from '@/components/training/BottomActions';
+import { RestOverlay } from '@/components/training/RestOverlay';
+import { SessionMapSheet } from '@/components/training/SessionMapSheet';
+import { SeriesStrip } from '@/components/training/SeriesStrip';
 import { useState, useMemo, useCallback } from "react";
 import { WorkoutSet, Exercise, ExerciseMode, SetType } from '@/types/workout';
 import { RenameOrReplaceDialog } from '@/components/RenameOrReplaceDialog';
@@ -30,19 +31,19 @@ export default function TrainingSession() {
   const navigate = useNavigate();
   const {
     programs, history, activeWorkout,
-    completeSet, endWorkout, getLastPerformance,
+    completeSet, endWorkout, getLastPerformance, getPreviousSessionForExercise,
     updateProgram, resolveExercises, updateActiveWorkout,
     migrateHistoryExerciseName,
   } = useWorkout();
 
   // ===== Local state (transient session state) =====
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
+  const [restOpen, setRestOpen] = useState(false);
+  const [mapOpen, setMapOpen] = useState(false);
   const [exerciseSets, setExerciseSets] = useState<Record<string, Record<string, WorkoutSet>>>({});
   const [showCompleteModal, setShowCompleteModal] = useState(false);
   const [supersetActiveIdx, setSupersetActiveIdx] = useState(0);
   const [timerKey, setTimerKey] = useState(0);
-  const [showTimer, setShowTimer] = useState(true);
-  const [showExerciseList, setShowExerciseList] = useState(false);
   const [showExercisePicker, setShowExercisePicker] = useState<string | null>(null); // exerciseId or 'new'
   const [editingSetId, setEditingSetId] = useState<string | null>(null);
 
@@ -102,8 +103,8 @@ export default function TrainingSession() {
   // ===== Rest timer duration based on the upcoming set's type =====
   const getTimerDuration = useCallback((setType: string | undefined): number => {
     if (setType === 'myo-rep') return 15;
-    if (setType === 'hypertrophie') return 120;
-    return 180;
+    if (setType === 'force') return 180;
+    return 60; // hypertrophie + tout le reste
   }, []);
 
   const timerDuration = useMemo(() => {
@@ -357,8 +358,12 @@ export default function TrainingSession() {
     updateProgram(updatedProgram);
   };
 
-  // ===== Auto-RPE on rest-pause series (myo-rep specific) =====
-  const handleTimerStart = () => {
+  // ===== Ouverture du rest overlay + auto-RPE myo-rep =====
+  // Centralise: tout démarrage de repos (manuel via header OU auto après validate)
+  // passe par ici. Pour les exos myo-rep, ça incrémente le myoRestPauseCount du
+  // set en cours (chaque mini-pause compte) et ajuste le RPE en conséquence.
+  const openRest = () => {
+    setRestOpen(true);
     if (!currentStep) return;
     const ex = currentStep.type === 'superset' ? currentStep.exercises[supersetActiveIdx] : currentStep.exercises[0];
     if (!ex || ex.sets[0]?.type !== 'myo-rep') return;
@@ -387,7 +392,7 @@ export default function TrainingSession() {
       if (exerciseId === exA.id) {
         setSupersetActiveIdx(1);
       } else if (exerciseId === exB.id) {
-        setTimerKey(k => k + 1);
+        setTimerKey(k => k + 1); openRest();
         const allADone = exA.sets.every(s => (s.id === setId && exerciseId === exA.id) || s.isCompleted || !!exerciseSets[exA.id]?.[s.id]?.isCompleted);
         const allBDone = exB.sets.every(s => s.id === setId || s.isCompleted || !!exerciseSets[exB.id]?.[s.id]?.isCompleted);
         if (allADone && allBDone && currentStepIndex < navSteps.length - 1) {
@@ -397,7 +402,7 @@ export default function TrainingSession() {
         }
       }
     } else {
-      setTimerKey(k => k + 1);
+      setTimerKey(k => k + 1); openRest();
       const ex = currentStep.exercises[0];
       if (exerciseId === ex.id) {
         const allDone = ex.sets.every(s => s.id === setId || s.isCompleted || !!exerciseSets[ex.id]?.[s.id]?.isCompleted);
@@ -443,7 +448,6 @@ export default function TrainingSession() {
   const exProgression = activeExercise ? computeProgression(activeExercise) : null;
 
   // Remaining exercises after current
-  const remainingSteps = navSteps.slice(currentStepIndex + 1);
 
   // ===== Top-row toggles for current exercise =====
   const handleToggleMode = () => {
@@ -485,8 +489,8 @@ export default function TrainingSession() {
             totalSets={totalSets}
             progress={progress}
             timerDuration={timerDuration}
-            showTimer={showTimer}
-            onToggleTimer={() => setShowTimer(prev => !prev)}
+            onOpenRest={openRest}
+            onOpenMap={() => setMapOpen(true)}
             onRequestQuit={() => setShowCompleteModal(true)}
           />
           <ExerciseHeader
@@ -505,15 +509,7 @@ export default function TrainingSession() {
         </div>
       </header>
 
-      {/* Rest timer - toggled by button */}
-      <RestTimerControl
-        show={showTimer}
-        duration={timerDuration}
-        timerKey={timerKey}
-        onStart={handleTimerStart}
-      />
-
-      <main className="container flex-1 px-4 pt-3 pb-6">
+      <main className="container flex-1 px-4 pt-3 pb-3">
         {currentStep?.type === 'superset' && (
           <SupersetBanner
             exercises={[currentStep.exercises[0], currentStep.exercises[1]]}
@@ -522,8 +518,9 @@ export default function TrainingSession() {
         )}
 
         {activeExercise && (
-          <SeriesPills
+          <SeriesStrip
             exercise={activeExercise}
+            previousSession={getPreviousSessionForExercise(program.id, session.id, activeExercise.name)}
             activeSetIndex={activeSetIndex}
             editingSetId={editingSetId}
             exerciseSets={exerciseSets}
@@ -547,16 +544,6 @@ export default function TrainingSession() {
         />
 
         <BottomActions
-          remainingSteps={remainingSteps}
-          currentStepIndex={currentStepIndex}
-          showExerciseList={showExerciseList}
-          onToggleExerciseList={() => setShowExerciseList(!showExerciseList)}
-          onJumpToStep={(stepIdx, supersetIdx) => {
-            setCurrentStepIndex(stepIdx);
-            setSupersetActiveIdx(supersetIdx);
-            setShowExerciseList(false);
-          }}
-          onRequestAddExercise={() => setShowExercisePicker('new')}
           allSetsCompleted={allSetsCompleted}
           onEndWorkout={handleEndWorkout}
         />
@@ -586,6 +573,34 @@ export default function TrainingSession() {
         onRename={confirmInSessionAsRename}
         onReplace={confirmInSessionAsReplacement}
         onCancel={() => setPendingInSessionRename(null)}
+      />
+
+      {/* Plan de séance — nav non-séquentielle */}
+      <SessionMapSheet
+        open={mapOpen}
+        onClose={() => setMapOpen(false)}
+        steps={navSteps}
+        currentStepIndex={currentStepIndex}
+        exerciseSets={exerciseSets}
+        onJump={(idx) => { setCurrentStepIndex(idx); setSupersetActiveIdx(0); }}
+        onRequestAddExercise={() => setShowExercisePicker('new')}
+      />
+
+      {/* Rest overlay plein écran — déclenché auto à la validation ou via bouton chrono header */}
+      <RestOverlay
+        open={restOpen}
+        durationSec={timerDuration}
+        onClose={() => setRestOpen(false)}
+        exerciseName={activeExercise?.name}
+        setLabel={activeExercise ? `Série ${(activeSetIndex >= 0 ? activeSetIndex : activeExercise.sets.length - 1) + 1}/${activeExercise.sets.length}` : undefined}
+        setType={activeExercise?.sets[Math.max(0, activeSetIndex)]?.type}
+        previousPerf={(() => {
+          if (!activeExercise || activeSetIndex < 0) return undefined;
+          const aSet = activeExercise.sets[activeSetIndex];
+          if (!aSet) return undefined;
+          const perf = getLastPerfForExercise(activeExercise, aSet.id, activeSetIndex + 1);
+          return perf ? { weight: perf.weight, reps: perf.reps, rpe: perf.rpe } : undefined;
+        })()}
       />
 
       {/* Quit modal */}

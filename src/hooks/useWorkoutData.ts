@@ -358,6 +358,46 @@ export function useWorkoutData() {
     return chronological[idx] ?? chronological[chronological.length - 1];
   }, [history, activeWorkout]);
 
+  // Retourne toutes les séries (Map<setIndex, perf>) de la DERNIÈRE occurrence
+  // de cette même séance (même programId + sessionId) pour cet exo.
+  // Utilisé pour la frise comparaison: voir l intégralité de la session n-1
+  // côte à côte avec celle en cours.
+  // Fenêtre de regroupement: 4h autour de l entrée la plus récente, dans la
+  // même séance définition (sessionId stable, pas la même date).
+  const getPreviousSessionForExercise = useCallback((
+    programId: string,
+    sessionId: string,
+    exerciseName: string,
+  ): Map<number, WorkoutHistory> => {
+    const result = new Map<number, WorkoutHistory>();
+    if (!exerciseName) return result;
+    const cutoff = activeWorkout?.startedAt ? new Date(activeWorkout.startedAt).getTime() : null;
+    const candidates = history.filter(h =>
+      h.programId === programId
+      && h.sessionId === sessionId
+      && h.exerciseName === exerciseName
+      && (!cutoff || new Date(h.completedAt).getTime() < cutoff)
+    );
+    if (candidates.length === 0) return result;
+    const sorted = [...candidates].sort((a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime());
+    const mostRecent = sorted[0];
+    const mostRecentTime = new Date(mostRecent.completedAt).getTime();
+    const window = 4 * 60 * 60 * 1000;
+    const sessionEntries = sorted.filter(h =>
+      mostRecentTime - new Date(h.completedAt).getTime() < window
+    );
+    for (const e of sessionEntries) {
+      const idx = e.setIndex;
+      if (typeof idx !== 'number') continue;
+      // Si plusieurs entrées au même setIndex (replay/correction), garder la plus récente
+      const existing = result.get(idx);
+      if (!existing || new Date(e.completedAt).getTime() > new Date(existing.completedAt).getTime()) {
+        result.set(idx, e);
+      }
+    }
+    return result;
+  }, [history, activeWorkout]);
+
   // Migrate all history entries with exerciseName === oldName to newName.
   // Used when the user confirms a rename (vs replacement) via the
   // RenameOrReplaceDialog. Idempotent: a no-op if no entry matches oldName.
@@ -401,6 +441,7 @@ export function useWorkoutData() {
     completeSet,
     endWorkout,
     getLastPerformance,
+    getPreviousSessionForExercise,
     migrateHistoryExerciseName,
     isExerciseActive,
     resolveExercises,
