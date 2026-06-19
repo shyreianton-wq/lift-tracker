@@ -27,3 +27,8 @@ dist-ssr
 .bak-*/
 *.bak
 *.bak-*
+
+# Données utilisateur — jamais couplées au code/branches
+user-data/
+# Secrets locaux
+.env.local
