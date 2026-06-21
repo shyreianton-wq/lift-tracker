@@ -334,7 +334,7 @@ export default function TrainingSession() {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <p className="text-muted-foreground mb-4">Séance introuvable</p>
-          <Button variant="secondary" onClick={() => navigate('/')}>Retour</Button>
+          <Button variant="secondary" onClick={() => { endWorkout(); navigate('/'); }}>Retour</Button>
         </div>
       </div>
     );

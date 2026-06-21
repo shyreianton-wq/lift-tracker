@@ -4,7 +4,7 @@ import { useWorkout } from "@/contexts/WorkoutContext";
 import { ProgramCard } from "@/components/ProgramCard";
 import { Button } from "@/components/ui/button";
 import { Plus, Dumbbell, BarChart3, Users } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { CreateProgramModal } from "@/components/CreateProgramModal";
 import { Program } from "@/types/workout";
 import { useNavigate } from "react-router-dom";
@@ -30,9 +30,14 @@ export default function Dashboard() {
     }
   }, [showSplash]);
 
-  // Auto-redirect to active training session after data loads
+  // Auto-redirect to active training session — UNIQUEMENT au 1er chargement.
+  // Borné par un ref one-shot : sinon, quitter une séance (activeWorkout=null)
+  // suivi d'un re-render pouvait re-déclencher la redirection et rendre la séance
+  // inquittable (boucle).
+  const didAutoResumeRef = useRef(false);
   useEffect(() => {
-    if (isLoaded && activeWorkout) {
+    if (isLoaded && activeWorkout && !didAutoResumeRef.current) {
+      didAutoResumeRef.current = true;
       navigate(`/training/${activeWorkout.programId}/${activeWorkout.sessionId}`, { replace: true });
     }
   }, [isLoaded, activeWorkout, navigate]);

@@ -270,6 +270,15 @@ export function useWorkoutData() {
 
   const endWorkout = useCallback(() => {
     setActiveWorkout(null);
+    // Persiste immédiatement la fin de séance (PATCH atomique côté serveur), sans
+    // dépendre du save debounced 500ms — qui peut sauter si l'app se ferme ou passe
+    // en arrière-plan juste après le quit (cause: séance fantôme inquittable).
+    fetch(`${API_URL}/api/data`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ activeWorkout: null }),
+    }).catch(() => { /* le save debounced rattrapera */ });
   }, []);
 
   // Match historique STRICTEMENT par (exerciseName, setType, setIndex).
