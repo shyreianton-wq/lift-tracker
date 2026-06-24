@@ -106,6 +106,19 @@ export default function SessionDetail() {
               <span className="text-muted-foreground">({relativeDate(prev.startedAt)})</span>
             </div>
           )}
+
+          {(() => {
+            const withRest = workout.sets.filter(s => s.restSec != null);
+            if (withRest.length === 0) return null;
+            const totalRest = withRest.reduce((acc, s) => acc + (s.restSec || 0), 0);
+            const totalExtra = workout.sets.reduce((acc, s) => acc + (s.extraRestSec || 0), 0);
+            return (
+              <div className="mt-3 pt-3 border-t border-border/50 flex items-center justify-center gap-4 text-sm">
+                <span className="text-muted-foreground">Repos total <span className="text-foreground font-semibold tabular-nums">{formatDuration(totalRest)}</span></span>
+                {totalExtra > 0 && <span className="text-orange-400 font-medium tabular-nums">+{formatDuration(totalExtra)} grattées</span>}
+              </div>
+            );
+          })()}
         </div>
 
         {/* Liste exos avec tables compactes */}
@@ -184,6 +197,19 @@ export default function SessionDetail() {
                           {ex.sets.map((s, i) => (
                             <td key={i} className="py-1 px-2 text-muted-foreground">
                               {s.rpe != null ? s.rpe : '—'}
+                            </td>
+                          ))}
+                          {prevEx && <td className="py-1 pl-3 border-l border-border/50"></td>}
+                        </tr>
+                      )}
+                      {ex.sets.some(s => s.restSec != null) && (
+                        <tr>
+                          <td className="py-1 pr-2 text-muted-foreground text-[10px]">Repos</td>
+                          {ex.sets.map((s, i) => (
+                            <td key={i} className="py-1 px-2 text-muted-foreground">
+                              {s.restSec != null ? (
+                                <span>{formatDuration(s.restSec)}{s.extraRestSec ? <span className="text-orange-400"> +{s.extraRestSec}s</span> : null}</span>
+                              ) : '—'}
                             </td>
                           ))}
                           {prevEx && <td className="py-1 pl-3 border-l border-border/50"></td>}
