@@ -13,7 +13,7 @@ interface WorkoutContextType {
   startWorkout: (programId: string, sessionId: string) => void;
   updateActiveWorkout: (updates: Partial<ActiveWorkout>) => void;
   completeSet: (exerciseId: string, setId: string, completedSet: WorkoutSet, exerciseName?: string, setIndex?: number) => string;
-  setHistoryRest: (entryId: string, restSec: number) => void;
+  setHistoryRest: (entryId: string, patch: { restSec?: number; plannedRestSec?: number; extraRestSec?: number }) => void;
   endWorkout: () => void;
   getLastPerformance: (programId: string, sessionId: string, exerciseId: string, setId: string, setType?: SetType, exerciseName?: string, setIndex?: number) => WorkoutHistory | undefined;
   getPreviousSessionForExercise: (programId: string, sessionId: string, exerciseName: string) => Map<number, WorkoutHistory>;

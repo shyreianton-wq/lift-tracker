@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import {
-  X, Plus, Trash2, GripVertical, Shuffle, Settings,
+  X, Plus, Trash2, Shuffle, Settings, ChevronUp, ChevronDown,
 } from 'lucide-react';
 import { generateId } from './program-modal/programModalUtils';
 import { RotationGroupsEditor } from './program-modal/RotationGroupsEditor';
@@ -86,6 +86,16 @@ export function CreateProgramModal({
   };
 
   const deleteSession = (sessionId: string) => setSessions(sessions.filter(s => s.id !== sessionId));
+
+  // Réordonner les séances (monter/descendre). L'ordre du tableau = ordre d'affichage.
+  // N'impacte ni l'historique (matché par nom) ni les séances actives (référencées par id).
+  const moveSession = (index: number, dir: -1 | 1) => {
+    const target = index + dir;
+    if (target < 0 || target >= sessions.length) return;
+    const next = [...sessions];
+    [next[index], next[target]] = [next[target], next[index]];
+    setSessions(next);
+  };
 
   // Rename exercise across ALL sessions (not just current one) and rotation groups
   const handleRenameGlobal = (oldName: string, newName: string) => {
@@ -182,9 +192,20 @@ export function CreateProgramModal({
                     </div>
                   ) : (
                     <div className="space-y-2">
-                      {sessions.map((session) => (
-                        <div key={session.id} className="flex items-center gap-3 p-3 bg-secondary/50 rounded-lg">
-                          <GripVertical className="h-4 w-4 text-muted-foreground" />
+                      {sessions.map((session, index) => (
+                        <div key={session.id} className="flex items-center gap-2 p-3 bg-secondary/50 rounded-lg">
+                          <div className="flex flex-col -my-1">
+                            <button type="button" aria-label="Monter la séance" disabled={index === 0}
+                              onClick={() => moveSession(index, -1)}
+                              className="h-5 w-5 flex items-center justify-center text-muted-foreground hover:text-foreground disabled:opacity-30">
+                              <ChevronUp className="h-4 w-4" />
+                            </button>
+                            <button type="button" aria-label="Descendre la séance" disabled={index === sessions.length - 1}
+                              onClick={() => moveSession(index, 1)}
+                              className="h-5 w-5 flex items-center justify-center text-muted-foreground hover:text-foreground disabled:opacity-30">
+                              <ChevronDown className="h-4 w-4" />
+                            </button>
+                          </div>
                           <div className="flex-1">
                             <span className="font-medium">{session.name}</span>
                             <span className="text-sm text-muted-foreground ml-2">

@@ -264,8 +264,8 @@ export function useWorkoutData() {
   }, [activeWorkout]);
 
   // Renseigne rétroactivement le repos réel (s) pris après une série donnée.
-  const setHistoryRest = useCallback((entryId: string, restSec: number) => {
-    setHistory(prev => prev.map(h => h.id === entryId ? { ...h, restSec } : h));
+  const setHistoryRest = useCallback((entryId: string, patch: { restSec?: number; plannedRestSec?: number; extraRestSec?: number }) => {
+    setHistory(prev => prev.map(h => h.id === entryId ? { ...h, ...patch } : h));
   }, []);
 
   const endWorkout = useCallback(() => {

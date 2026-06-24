@@ -7,7 +7,7 @@ import { SetType } from '@/types/workout';
 interface RestOverlayProps {
   open: boolean;
   durationSec: number;
-  onClose: () => void;
+  onClose: (restInfo?: { plannedSec: number; extraSec: number }) => void;
   // Contexte pour rappeler ce qu on vient de faire / ce qui vient
   exerciseName?: string;
   setLabel?: string;
@@ -57,7 +57,7 @@ export function RestOverlay({
           <div className="flex justify-end p-4">
             <button
               type="button"
-              onClick={() => { timer.pause(); onClose(); }}
+              onClick={() => { timer.pause(); onClose({ plannedSec: timer.duration, extraSec: Math.max(0, -remaining) }); }}
               className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-white/80 hover:bg-white/20"
               aria-label="Fermer le chrono"
             >
@@ -74,7 +74,7 @@ export function RestOverlay({
               transition={{ duration: 0.15 }}
               role="button"
               aria-label="Reprendre (enregistre le temps de repos)"
-              onClick={() => { timer.pause(); onClose(); }}
+              onClick={() => { timer.pause(); onClose({ plannedSec: timer.duration, extraSec: Math.max(0, -remaining) }); }}
               className={`font-mono font-black tabular-nums tracking-tight cursor-pointer select-none ${isOvertime ? 'text-red-500' : isUrgent ? 'text-red-400' : 'text-white'}`}
               style={{ fontSize: 'min(36vw, 220px)', lineHeight: 1 }}
             >
@@ -179,7 +179,7 @@ export function RestOverlay({
 
             <button
               type="button"
-              onClick={() => { timer.pause(); onClose(); }}
+              onClick={() => { timer.pause(); onClose({ plannedSec: timer.duration, extraSec: Math.max(0, -remaining) }); }}
               className="mt-4 mx-auto flex items-center gap-2 text-white/60 hover:text-white text-sm"
             >
               <SkipForward className="h-4 w-4" /> Passer

@@ -87,6 +87,8 @@ export interface WorkoutHistory {
   setIndex?: number;
   myoRestPauseCount?: number;
   restSec?: number; // repos réel pris APRÈS cette série (s), dépassement inclus
+  plannedRestSec?: number; // chrono de repos configuré/utilisé pour cette série (s)
+  extraRestSec?: number; // secondes "grattées" au-delà du chrono prévu (overtime)
 }
 
 export interface ActiveWorkout {

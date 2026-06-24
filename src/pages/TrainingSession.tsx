@@ -41,11 +41,15 @@ export default function TrainingSession() {
   const [restOpen, setRestOpen] = useState(false);
   // Repos en cours : série à laquelle rattacher le temps de repos réel (wall-clock).
   const restCtxRef = useRef<{ entryId: string; startedAt: number } | null>(null);
-  const recordRest = () => {
+  const recordRest = (info?: { plannedSec: number; extraSec: number }) => {
     const ctx = restCtxRef.current;
     if (!ctx) return;
     const restSec = Math.round((Date.now() - ctx.startedAt) / 1000);
-    if (restSec > 0 && restSec < 3600) setHistoryRest(ctx.entryId, restSec);
+    if (restSec > 0 && restSec < 7200) {
+      const p: { restSec: number; plannedRestSec?: number; extraRestSec?: number } = { restSec };
+      if (info) { p.plannedRestSec = info.plannedSec; p.extraRestSec = info.extraSec; }
+      setHistoryRest(ctx.entryId, p);
+    }
     restCtxRef.current = null;
   };
   const [mapOpen, setMapOpen] = useState(false);
@@ -602,7 +606,7 @@ export default function TrainingSession() {
       <RestOverlay
         open={restOpen}
         durationSec={timerDuration}
-        onClose={() => { recordRest(); setRestOpen(false); }}
+        onClose={(info) => { recordRest(info); setRestOpen(false); }}
         exerciseName={activeExercise?.name}
         setLabel={activeExercise ? `Série ${(activeSetIndex >= 0 ? activeSetIndex : activeExercise.sets.length - 1) + 1}/${activeExercise.sets.length}` : undefined}
         setType={activeExercise?.sets[Math.max(0, activeSetIndex)]?.type}
