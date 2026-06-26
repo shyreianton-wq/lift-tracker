@@ -27,6 +27,7 @@ export interface Exercise {
   optional?: boolean; // suggested but not required, shown as optional in UI
   rotationGroupRef?: string; // references a RotationGroupConfig.id — this exercise is a "slot"
   supersetPairId?: string; // when two exercises share the same supersetPairId, they form a superset pair
+  restSec?: number; // repos configuré pour cet exo (s) — override du défaut par type ; undefined = auto
 }
 
 export type SessionType = 'force' | 'hypertrophie' | 'myo-rep';

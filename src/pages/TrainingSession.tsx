@@ -122,12 +122,9 @@ export default function TrainingSession() {
 
   const timerDuration = useMemo(() => {
     if (!currentStep) return 120;
-    if (currentStep.type === 'superset') {
-      const setType = currentStep.exercises[1]?.sets[0]?.type;
-      return getTimerDuration(setType);
-    }
-    const setType = currentStep.exercises[0]?.sets[0]?.type;
-    return getTimerDuration(setType);
+    const ex = currentStep.type === 'superset' ? currentStep.exercises[1] : currentStep.exercises[0];
+    // Repos configuré sur l'exo (programme) prioritaire, sinon défaut selon le type de série.
+    return ex?.restSec ?? getTimerDuration(ex?.sets[0]?.type);
   }, [currentStep, getTimerDuration]);
 
   const totalSets = exercises.reduce((acc, ex) => acc + ex.sets.length, 0);

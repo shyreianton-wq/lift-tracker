@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
   Plus, Trash2, ChevronUp, ChevronDown, Timer, Dumbbell,
-  RotateCcw, Shuffle, Pencil, Check, Zap,
+  RotateCcw, Shuffle, Pencil, Check, Zap, Clock,
 } from 'lucide-react';
 import {
   Session, Exercise, ExerciseMode, SetType,
@@ -137,6 +137,17 @@ export function SessionEditor({
   const toggleExerciseMode = (id: string) => {
     setExercises(exercises.map(e => e.id !== id ? e : { ...e, mode: e.mode === 'time' ? 'reps' as ExerciseMode : 'time' as ExerciseMode }));
   };
+
+  // Repos configurable par exo. undefined = auto (défaut selon le type de série).
+  const REST_PRESETS: (number | undefined)[] = [undefined, 30, 60, 90, 120, 180, 300];
+  const cycleRest = (id: string) => {
+    setExercises(exercises.map(e => {
+      if (e.id !== id) return e;
+      const i = REST_PRESETS.findIndex(v => v === e.restSec);
+      return { ...e, restSec: REST_PRESETS[(i + 1) % REST_PRESETS.length] };
+    }));
+  };
+  const restLabel = (s?: number) => s == null ? 'auto' : `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, '0')}`;
 
   const toggleSetType = (id: string) => {
     setExercises(exercises.map(e => {
@@ -427,6 +438,12 @@ export function SessionEditor({
                             }`}>
                             <RotateCcw className="h-3 w-3" />
                             {exercise.sets[0]?.type === 'myo-rep' ? 'Myo' : exercise.sets[0]?.type === 'hypertrophie' ? 'Hyp' : 'Force'}
+                          </button>
+                          <button type="button" onClick={(ev) => { ev.stopPropagation(); cycleRest(exercise.id); }}
+                            title="Temps de repos (auto = selon le type de série)"
+                            className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors tabular-nums">
+                            <Clock className="h-3 w-3" />
+                            {restLabel(exercise.restSec)}
                           </button>
                           {!isSlot && (
                             <button type="button" onClick={(ev) => { ev.stopPropagation(); handleSupersetToggle(exercise.id); }}
