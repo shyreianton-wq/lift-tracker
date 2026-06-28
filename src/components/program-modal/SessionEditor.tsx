@@ -441,9 +441,9 @@ export function SessionEditor({
                           </button>
                           <button type="button" onClick={(ev) => { ev.stopPropagation(); cycleRest(exercise.id); }}
                             title="Temps de repos (auto = selon le type de série)"
-                            className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors tabular-nums">
+                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs bg-teal-500/20 text-teal-300 hover:bg-teal-500/30 transition-colors tabular-nums font-medium">
                             <Clock className="h-3 w-3" />
-                            {restLabel(exercise.restSec)}
+                            Repos {restLabel(exercise.restSec)}
                           </button>
                           {!isSlot && (
                             <button type="button" onClick={(ev) => { ev.stopPropagation(); handleSupersetToggle(exercise.id); }}
