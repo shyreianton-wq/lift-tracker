@@ -12,7 +12,7 @@ import { RestOverlay } from '@/components/training/RestOverlay';
 import { SessionMapSheet } from '@/components/training/SessionMapSheet';
 import { SeriesStrip } from '@/components/training/SeriesStrip';
 import { useState, useMemo, useCallback, useRef } from "react";
-import { WorkoutSet, Exercise, ExerciseMode, SetType } from '@/types/workout';
+import { WorkoutSet, Exercise, ExerciseMode, SetType, WorkoutHistory } from '@/types/workout';
 import { RenameOrReplaceDialog } from '@/components/RenameOrReplaceDialog';
 import { hasHistoryForExerciseName, isExerciseNameKnown } from '@/lib/exercise-utils';
 
@@ -31,7 +31,7 @@ export default function TrainingSession() {
   const navigate = useNavigate();
   const {
     programs, history, activeWorkout,
-    completeSet, setHistoryRest, endWorkout, getLastPerformance, getPreviousSessionForExercise,
+    completeSet, setHistoryRest, endWorkout, getLastPerformance,
     updateProgram, resolveExercises, updateActiveWorkout,
     migrateHistoryExerciseName,
   } = useWorkout();
@@ -437,6 +437,20 @@ export default function TrainingSession() {
     return perf ? { reps: perf.reps, weight: perf.weight, rpe: perf.rpe, duration: perf.duration, myoRestPauseCount: perf.myoRestPauseCount, completedAt: perf.completedAt, setType: perf.setType } : undefined;
   };
 
+  // Perf N-1 pour la frise SeriesStrip : MÊME source que la tuile courante
+  // (getLastPerformance = match par nom+setType+setIndex, cross-programme, exclut la séance en cours).
+  // Corrige : la frise ne montrait rien pour les exos dont l'historique venait d'un autre programme
+  // ou sans setIndex, alors que la tuile courante l'affichait.
+  const buildPrevMap = (exercise: ResolvedExercise): Map<number, WorkoutHistory> => {
+    const m = new Map<number, WorkoutHistory>();
+    const resolvedId = exercise._historyId || exercise._resolvedExerciseId || exercise.id;
+    exercise.sets.forEach((s, idx) => {
+      const perf = getLastPerformance(program.id, session.id, resolvedId, s.id, s.type, exercise.name, idx + 1);
+      if (perf) m.set(idx + 1, perf);
+    });
+    return m;
+  };
+
   // Compute personal best (max weight*reps) for an exercise + setType from history.
   // Same rule as getLastPerformance: prefer entries matching exerciseName.
   // Fall back to exerciseId only for legacy entries with no exerciseName, so a
@@ -533,7 +547,7 @@ export default function TrainingSession() {
         {activeExercise && (
           <SeriesStrip
             exercise={activeExercise}
-            previousSession={getPreviousSessionForExercise(program.id, session.id, activeExercise.name)}
+            previousSession={buildPrevMap(activeExercise)}
             activeSetIndex={activeSetIndex}
             editingSetId={editingSetId}
             exerciseSets={exerciseSets}

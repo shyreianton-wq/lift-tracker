@@ -55,7 +55,9 @@ export function SeriesStrip({
             {/* Perf séance N-1 */}
             <div className="mt-0.5 text-[11px] tabular-nums text-muted-foreground/80 leading-tight">
               {prev ? (
-                <>{prev.weight}<span className="text-muted-foreground/50">kg</span>×{prev.reps}</>
+                exercise.mode === 'time'
+                  ? <>{prev.duration || 0}<span className="text-muted-foreground/50">s</span></>
+                  : <>{prev.weight}<span className="text-muted-foreground/50">kg</span>×{prev.reps}</>
               ) : (
                 <span className="text-muted-foreground/40">—</span>
               )}
