@@ -59,7 +59,7 @@ export function groupIntoWorkouts(history: WorkoutHistory[]): GroupedWorkout[] {
   const sorted = [...history].sort((a, b) => a.completedAt.localeCompare(b.completedAt));
   const groups: GroupedWorkout[] = [];
   let cur: GroupedWorkout | null = null;
-  const GAP = 30 * 60 * 1000; // 30 min
+  const GAP = 3 * 60 * 60 * 1000; // 3 h — un long repos ne doit pas scinder une séance
 
   for (const h of sorted) {
     const ts = new Date(h.completedAt).getTime();
@@ -201,6 +201,27 @@ export function findPreviousWorkout(
     }
   }
   return undefined;
+}
+
+// Comme findPreviousWorkout mais remonte jusqu'à la dernière séance dont les séries
+// sont réellement comparables (matchedSeriesDeltaPct non-null), en sautant les fragments
+// (séance interrompue/entrelacée) qui n'ont aucune série commune.
+export function findPreviousComparable(
+  workouts: GroupedWorkout[],
+  currentId: string,
+): { prev: GroupedWorkout | undefined; delta: number | null } {
+  const idx = workouts.findIndex(w => w.id === currentId);
+  if (idx < 0) return { prev: undefined, delta: null };
+  const current = workouts[idx];
+  let nearestSame: GroupedWorkout | undefined;
+  for (let i = idx + 1; i < workouts.length; i++) {
+    const w = workouts[i];
+    if (w.programId !== current.programId || w.sessionId !== current.sessionId) continue;
+    if (!nearestSame) nearestSame = w;
+    const delta = matchedSeriesDeltaPct(current.sets, w.sets);
+    if (delta !== null) return { prev: w, delta };
+  }
+  return { prev: nearestSame, delta: null };
 }
 
 // ===========================================================================

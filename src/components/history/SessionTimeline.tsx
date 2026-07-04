@@ -4,7 +4,7 @@ import { format, parseISO, isToday, isYesterday } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { ChevronRight, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { Program } from '@/types/workout';
-import { GroupedWorkout, workoutMetrics, volumeDeltaPct, findPreviousWorkout, formatDuration } from './historyHelpers';
+import { GroupedWorkout, workoutMetrics, findPreviousComparable, formatDuration } from './historyHelpers';
 
 interface SessionTimelineProps {
   workouts: GroupedWorkout[];
@@ -53,8 +53,7 @@ export function SessionTimeline({ workouts, programs }: SessionTimelineProps) {
           <div className="space-y-2">
             {dayWorkouts.map(w => {
               const m = workoutMetrics(w);
-              const prev = findPreviousWorkout(workouts, w.id);
-              const delta = volumeDeltaPct(w, prev);
+              const { prev, delta } = findPreviousComparable(workouts, w.id);
               const { program, session } = sessionName(programs, w.programId, w.sessionId);
               const time = format(parseISO(w.startedAt), 'HH:mm');
 

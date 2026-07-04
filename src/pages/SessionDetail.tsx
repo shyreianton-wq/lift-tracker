@@ -6,8 +6,8 @@ import { format, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { useWorkout } from '@/contexts/WorkoutContext';
 import {
-  groupIntoWorkouts, workoutMetrics, findPreviousWorkout,
-  volumeDeltaPct, matchedSeriesDeltaPct, exercisesInWorkout, formatDuration, relativeDate,
+  groupIntoWorkouts, workoutMetrics, findPreviousComparable,
+  matchedSeriesDeltaPct, exercisesInWorkout, formatDuration, relativeDate,
 } from '@/components/history/historyHelpers';
 
 function typeBadge(t?: string) {
@@ -25,10 +25,11 @@ export default function SessionDetail() {
   const workout = useMemo(() => workouts.find(w => w.id === decodeURIComponent(id || '')), [workouts, id]);
 
   // Memoize prev + map par exo AVANT tout early return (rules of hooks)
-  const prevWorkout = useMemo(
-    () => workout ? findPreviousWorkout(workouts, workout.id) : undefined,
+  const prevComparable = useMemo(
+    () => workout ? findPreviousComparable(workouts, workout.id) : { prev: undefined, delta: null },
     [workouts, workout]
   );
+  const prevWorkout = prevComparable.prev;
   const prevExosByName = useMemo(() => {
     if (!prevWorkout) return new Map<string, ReturnType<typeof exercisesInWorkout>[number]>();
     const m = new Map<string, ReturnType<typeof exercisesInWorkout>[number]>();
@@ -47,7 +48,7 @@ export default function SessionDetail() {
 
   const m = workoutMetrics(workout);
   const prev = prevWorkout;
-  const delta = volumeDeltaPct(workout, prev);
+  const delta = prevComparable.delta;
   const exos = exercisesInWorkout(workout, programs);
 
   const program = programs.find(p => p.id === workout.programId);
