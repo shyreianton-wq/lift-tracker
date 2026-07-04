@@ -56,34 +56,34 @@ export interface GroupedWorkout {
 
 export function groupIntoWorkouts(history: WorkoutHistory[]): GroupedWorkout[] {
   if (history.length === 0) return [];
+  // Regroupement par (programme + séance + JOUR local) : toutes les séries d'un même
+  // type de séance dans la même journée = UNE séance, même si on a entrelacé d'autres
+  // séances entre-temps (ex: UPPER A → LOWER B → UPPER A ⇒ un seul UPPER A ce jour-là).
   const sorted = [...history].sort((a, b) => a.completedAt.localeCompare(b.completedAt));
-  const groups: GroupedWorkout[] = [];
-  let cur: GroupedWorkout | null = null;
-  const GAP = 3 * 60 * 60 * 1000; // 3 h — un long repos ne doit pas scinder une séance
-
+  const byKey = new Map<string, GroupedWorkout>();
   for (const h of sorted) {
-    const ts = new Date(h.completedAt).getTime();
-    if (!cur || h.programId !== cur.programId || h.sessionId !== cur.sessionId ||
-        ts - new Date(cur.endedAt).getTime() > GAP) {
-      if (cur) groups.push(cur);
-      cur = {
-        id: `${h.programId}__${h.sessionId}__${h.completedAt}`,
+    const d = new Date(h.completedAt); // jour LOCAL (fuseau du téléphone)
+    const day = `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+    const key = `${h.programId}__${h.sessionId}__${day}`;
+    const g = byKey.get(key);
+    if (!g) {
+      byKey.set(key, {
+        id: key,
         programId: h.programId,
         sessionId: h.sessionId,
         startedAt: h.completedAt,
         endedAt: h.completedAt,
         durationSec: 0,
         sets: [h],
-      };
+      });
     } else {
-      cur.sets.push(h);
-      cur.endedAt = h.completedAt;
-      cur.durationSec = Math.round((new Date(cur.endedAt).getTime() - new Date(cur.startedAt).getTime()) / 1000);
+      g.sets.push(h);
+      g.endedAt = h.completedAt; // sorted asc → h est le plus récent du groupe
+      g.durationSec = Math.round((new Date(g.endedAt).getTime() - new Date(g.startedAt).getTime()) / 1000);
     }
   }
-  if (cur) groups.push(cur);
-  // Retourner du plus récent au plus ancien
-  return groups.reverse();
+  // Du plus récent au plus ancien
+  return Array.from(byKey.values()).sort((a, b) => b.startedAt.localeCompare(a.startedAt));
 }
 
 // ===========================================================================
