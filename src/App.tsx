@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { WorkoutProvider } from "@/contexts/WorkoutContext";
 import { SaveStatusBanner } from "@/components/SaveStatusBanner";
+import { PendingSyncPrompt } from "@/components/PendingSyncPrompt";
 import Index from "./pages/Index";
 import ProgramDetail from "./pages/ProgramDetail";
 import TrainingSession from "./pages/TrainingSession";
@@ -21,6 +22,7 @@ const App = () => (
       <BrowserRouter>
         <WorkoutProvider>
           <SaveStatusBanner />
+          <PendingSyncPrompt />
           <Toaster />
           <Sonner />
           <Routes>

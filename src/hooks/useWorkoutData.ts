@@ -138,6 +138,37 @@ function resolveRotationSlot(
   } as Exercise & { _resolvedExerciseId: string };
 }
 
+// ---- Tampon local (localStorage) des séries non synchronisées ----
+// ADDITIF uniquement : ne sert qu'à re-soumettre au serveur ce qu'il n'a pas encore.
+// N'écrase JAMAIS l'état serveur (le serveur reste la source de vérité au chargement).
+const PENDING_KEY = 'lift_pending_sync_v1';
+function readPending(): { history: WorkoutHistory[]; activeWorkout: ActiveWorkout | null } | null {
+  try { const raw = localStorage.getItem(PENDING_KEY); return raw ? JSON.parse(raw) : null; } catch { return null; }
+}
+function unionById(a: WorkoutHistory[], b: WorkoutHistory[]): WorkoutHistory[] {
+  const m = new Map<string, WorkoutHistory>();
+  for (const x of a) m.set(x.id, x);
+  for (const x of b) if (!m.has(x.id)) m.set(x.id, x);
+  return Array.from(m.values());
+}
+function persistPending(data: { history: WorkoutHistory[]; activeWorkout: ActiveWorkout | null }) {
+  try {
+    const existing = readPending();
+    const merged = existing ? unionById(data.history, existing.history) : data.history;
+    localStorage.setItem(PENDING_KEY, JSON.stringify({ history: merged, activeWorkout: data.activeWorkout }));
+  } catch { /* quota / navigation privée */ }
+}
+function prunePending(data: { history: WorkoutHistory[] }) {
+  try {
+    const existing = readPending();
+    if (!existing) return;
+    const postedIds = new Set(data.history.map(x => x.id));
+    const remaining = existing.history.filter(e => !postedIds.has(e.id));
+    if (remaining.length === 0) localStorage.removeItem(PENDING_KEY);
+    else localStorage.setItem(PENDING_KEY, JSON.stringify({ history: remaining, activeWorkout: existing.activeWorkout }));
+  } catch { /* ignore */ }
+}
+
 export function useWorkoutData() {
   const [programs, setPrograms] = useState<Program[]>([]);
   const [history, setHistory] = useState<WorkoutHistory[]>([]);
@@ -145,6 +176,7 @@ export function useWorkoutData() {
   const [isLoaded, setIsLoaded] = useState(false);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const [pendingSync, setPendingSync] = useState<WorkoutHistory[] | null>(null);
 
   useEffect(() => {
     async function loadData() {
@@ -166,6 +198,14 @@ export function useWorkoutData() {
         setPrograms((serverData.programs || []).map(sanitizeProgram));
         setHistory(serverData.history || []);
         setActiveWorkout(serverData.activeWorkout || null);
+        // Séries d'une séance précédente restées non synchronisées (hors-ligne) ?
+        const pending = readPending();
+        if (pending) {
+          const serverIds = new Set((serverData.history || []).map((x: WorkoutHistory) => x.id));
+          const unsynced = pending.history.filter(e => !serverIds.has(e.id));
+          if (unsynced.length > 0) setPendingSync(unsynced);
+          else { try { localStorage.removeItem(PENDING_KEY); } catch { /* ignore */ } }
+        }
       }
       setIsLoaded(true);
     }
@@ -179,16 +219,24 @@ export function useWorkoutData() {
     try {
       const res = await fetch(`${API_URL}/api/data`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
         credentials: 'include',
         body: JSON.stringify(stamped),
       });
-      // fetch ne rejette QUE sur erreur réseau : vérifier explicitement le statut HTTP
-      // (sinon un 401/502 ou une page de login proxy passerait pour un succès).
-      if (!res.ok) { console.error('Save rejected, HTTP', res.status); setSaveState('error'); return; }
+      // fetch ne rejette QUE sur erreur réseau. Il faut aussi rejeter :
+      //  - un statut HTTP != 2xx (401/502…)
+      //  - une redirection (res.redirected) → proxy SAML expiré qui renvoie vers le login
+      //  - une réponse non-JSON (page de login HTML renvoyée en 200 par le proxy)
+      const ct = res.headers.get('content-type') || '';
+      if (!res.ok || res.redirected || !ct.includes('application/json')) {
+        console.error('Save non confirmé (auth/proxy ?) status', res.status, 'redirected', res.redirected, 'ct', ct);
+        persistPending(data); setSaveState('error'); return;
+      }
+      prunePending(data);
       setSaveState('saved');
     } catch (error) {
       console.error('Failed to save data to server:', error);
+      persistPending(data);
       setSaveState('error');
     }
   }, []);
@@ -450,12 +498,22 @@ export function useWorkoutData() {
       .filter((ex): ex is Exercise => ex !== null);
   }, [activeWorkout, programs]);
 
+  const syncPending = useCallback((entries: WorkoutHistory[]) => {
+    setHistory(h => unionById(h, entries));
+    setPendingSync(null);
+    // le save effect POSTera l'union ; prunePending videra le localStorage au succès
+  }, []);
+  const dismissPending = useCallback(() => setPendingSync(null), []);
+
   return {
     programs,
     history,
     activeWorkout,
     isLoaded,
     saveState,
+    pendingSync,
+    syncPending,
+    dismissPending,
     addProgram,
     updateProgram,
     deleteProgram,
