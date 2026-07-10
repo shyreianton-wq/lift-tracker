@@ -144,6 +144,7 @@ export function useWorkoutData() {
   const [activeWorkout, setActiveWorkout] = useState<ActiveWorkout | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
 
   useEffect(() => {
     async function loadData() {
@@ -174,15 +175,21 @@ export function useWorkoutData() {
   const saveToServer = useCallback(async (data: { programs: Program[]; history: WorkoutHistory[]; activeWorkout: ActiveWorkout | null }) => {
     const cleanData = { ...data, programs: data.programs.map(sanitizeProgram) };
     const stamped = { ...cleanData, lastSavedAt: new Date().toISOString() };
+    setSaveState('saving');
     try {
-      await fetch(`${API_URL}/api/data`, {
+      const res = await fetch(`${API_URL}/api/data`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify(stamped),
       });
+      // fetch ne rejette QUE sur erreur réseau : vérifier explicitement le statut HTTP
+      // (sinon un 401/502 ou une page de login proxy passerait pour un succès).
+      if (!res.ok) { console.error('Save rejected, HTTP', res.status); setSaveState('error'); return; }
+      setSaveState('saved');
     } catch (error) {
       console.error('Failed to save data to server:', error);
+      setSaveState('error');
     }
   }, []);
 
@@ -448,6 +455,7 @@ export function useWorkoutData() {
     history,
     activeWorkout,
     isLoaded,
+    saveState,
     addProgram,
     updateProgram,
     deleteProgram,

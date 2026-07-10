@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { WorkoutProvider } from "@/contexts/WorkoutContext";
+import { SaveStatusBanner } from "@/components/SaveStatusBanner";
 import Index from "./pages/Index";
 import ProgramDetail from "./pages/ProgramDetail";
 import TrainingSession from "./pages/TrainingSession";
@@ -19,6 +20,7 @@ const App = () => (
     <TooltipProvider>
       <BrowserRouter>
         <WorkoutProvider>
+          <SaveStatusBanner />
           <Toaster />
           <Sonner />
           <Routes>

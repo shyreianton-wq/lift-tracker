@@ -7,6 +7,7 @@ interface WorkoutContextType {
   history: WorkoutHistory[];
   activeWorkout: ActiveWorkout | null;
   isLoaded: boolean;
+  saveState: 'idle' | 'saving' | 'saved' | 'error';
   addProgram: (program: Program) => void;
   updateProgram: (program: Program) => void;
   deleteProgram: (programId: string) => void;
