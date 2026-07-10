@@ -176,7 +176,6 @@ export function useWorkoutData() {
   const [isLoaded, setIsLoaded] = useState(false);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
-  const [pendingSync, setPendingSync] = useState<WorkoutHistory[] | null>(null);
 
   useEffect(() => {
     async function loadData() {
@@ -198,14 +197,9 @@ export function useWorkoutData() {
         setPrograms((serverData.programs || []).map(sanitizeProgram));
         setHistory(serverData.history || []);
         setActiveWorkout(serverData.activeWorkout || null);
-        // Séries d'une séance précédente restées non synchronisées (hors-ligne) ?
-        const pending = readPending();
-        if (pending) {
-          const serverIds = new Set((serverData.history || []).map((x: WorkoutHistory) => x.id));
-          const unsynced = pending.history.filter(e => !serverIds.has(e.id));
-          if (unsynced.length > 0) setPendingSync(unsynced);
-          else { try { localStorage.removeItem(PENDING_KEY); } catch { /* ignore */ } }
-        }
+        // Le tampon localStorage n'est JAMAIS lu automatiquement ici (choix délibéré :
+        // ne jamais risquer qu'un état local écrase le serveur). Récupération MANUELLE
+        // uniquement, via RecoverySheet (getLocalBackup / pushLocalEntries).
       }
       setIsLoaded(true);
     }
@@ -498,12 +492,20 @@ export function useWorkoutData() {
       .filter((ex): ex is Exercise => ex !== null);
   }, [activeWorkout, programs]);
 
-  const syncPending = useCallback((entries: WorkoutHistory[]) => {
-    setHistory(h => unionById(h, entries));
-    setPendingSync(null);
-    // le save effect POSTera l'union ; prunePending videra le localStorage au succès
+  // --- Récupération MANUELLE du tampon local (jamais automatique) ---
+  const getLocalBackup = useCallback((): WorkoutHistory[] => {
+    const p = readPending();
+    return p ? p.history : [];
   }, []);
-  const dismissPending = useCallback(() => setPendingSync(null), []);
+  const pushLocalEntries = useCallback((entries: WorkoutHistory[]) => {
+    if (!entries.length) return;
+    // additif : union par id → déclenche un save (POST). prunePending videra du localStorage
+    // ce qui est confirmé au serveur ; si le save échoue, persistPending les re-bufferise.
+    setHistory(h => unionById(h, entries));
+  }, []);
+  const clearLocalBackup = useCallback(() => {
+    try { localStorage.removeItem(PENDING_KEY); } catch { /* ignore */ }
+  }, []);
 
   return {
     programs,
@@ -511,9 +513,9 @@ export function useWorkoutData() {
     activeWorkout,
     isLoaded,
     saveState,
-    pendingSync,
-    syncPending,
-    dismissPending,
+    getLocalBackup,
+    pushLocalEntries,
+    clearLocalBackup,
     addProgram,
     updateProgram,
     deleteProgram,

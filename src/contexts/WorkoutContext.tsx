@@ -8,9 +8,9 @@ interface WorkoutContextType {
   activeWorkout: ActiveWorkout | null;
   isLoaded: boolean;
   saveState: 'idle' | 'saving' | 'saved' | 'error';
-  pendingSync: WorkoutHistory[] | null;
-  syncPending: (entries: WorkoutHistory[]) => void;
-  dismissPending: () => void;
+  getLocalBackup: () => WorkoutHistory[];
+  pushLocalEntries: (entries: WorkoutHistory[]) => void;
+  clearLocalBackup: () => void;
   addProgram: (program: Program) => void;
   updateProgram: (program: Program) => void;
   deleteProgram: (programId: string) => void;

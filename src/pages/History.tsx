@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, LayoutGrid, Columns2 } from 'lucide-react';
+import { ArrowLeft, LayoutGrid, Columns2, LifeBuoy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useWorkout } from '@/contexts/WorkoutContext';
@@ -10,6 +10,7 @@ import { CalendarHeatmap } from '@/components/history/CalendarHeatmap';
 import { SessionTimeline } from '@/components/history/SessionTimeline';
 import { ExerciseProgressList } from '@/components/history/ExerciseProgressList';
 import { RecordsList } from '@/components/history/RecordsList';
+import { RecoverySheet } from '@/components/RecoverySheet';
 
 type LayoutKey = 'A' | 'B';
 const LS_KEY = 'history_layout_pref';
@@ -20,6 +21,7 @@ export default function History() {
 
   // Toggle layout A (3 onglets) vs B (2 onglets). Persisté en localStorage.
   const [layout, setLayout] = useState<LayoutKey>('A');
+  const [recoverOpen, setRecoverOpen] = useState(false);
   useEffect(() => {
     const saved = localStorage.getItem(LS_KEY);
     if (saved === 'A' || saved === 'B') setLayout(saved);
@@ -69,6 +71,14 @@ export default function History() {
               </div>
             </div>
 
+            <button
+              type="button"
+              onClick={() => setRecoverOpen(true)}
+              className="h-8 w-8 shrink-0 rounded-full bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground"
+              title="Rattraper une séance mal enregistrée"
+            >
+              <LifeBuoy className="h-4 w-4" />
+            </button>
             {/* Toggle layout A/B */}
             <div className="flex items-center rounded-full bg-secondary p-0.5 shrink-0">
               <button
