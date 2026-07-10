@@ -156,6 +156,8 @@ export default function History() {
           </Tabs>
         )}
       </main>
+
+      <RecoverySheet open={recoverOpen} onClose={() => setRecoverOpen(false)} />
     </div>
   );
 }
