@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, LayoutGrid, Columns2, LifeBuoy } from 'lucide-react';
+import { ArrowLeft, LayoutGrid, Columns2, CloudUpload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useWorkout } from '@/contexts/WorkoutContext';
@@ -74,10 +74,10 @@ export default function History() {
             <button
               type="button"
               onClick={() => setRecoverOpen(true)}
-              className="h-8 w-8 shrink-0 rounded-full bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground"
+              className="h-8 w-8 shrink-0 flex items-center justify-center text-muted-foreground/50 hover:text-foreground transition-colors"
               title="Rattraper une séance mal enregistrée"
             >
-              <LifeBuoy className="h-4 w-4" />
+              <CloudUpload className="h-[18px] w-[18px]" />
             </button>
             {/* Toggle layout A/B */}
             <div className="flex items-center rounded-full bg-secondary p-0.5 shrink-0">
