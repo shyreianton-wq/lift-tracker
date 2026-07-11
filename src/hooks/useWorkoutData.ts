@@ -506,6 +506,11 @@ export function useWorkoutData() {
   const clearLocalBackup = useCallback(() => {
     try { localStorage.removeItem(PENDING_KEY); } catch { /* ignore */ }
   }, []);
+  // Ajout manuel d'entrées d'historique (saisie manuelle / rattrapage). Additif (union par id).
+  const addHistoryEntries = useCallback((entries: WorkoutHistory[]) => {
+    if (!entries.length) return;
+    setHistory(h => unionById(h, entries));
+  }, []);
 
   return {
     programs,
@@ -516,6 +521,7 @@ export function useWorkoutData() {
     getLocalBackup,
     pushLocalEntries,
     clearLocalBackup,
+    addHistoryEntries,
     addProgram,
     updateProgram,
     deleteProgram,

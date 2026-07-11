@@ -1,6 +1,6 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { ArrowLeft, TrendingUp, TrendingDown, Minus, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { format, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -9,6 +9,7 @@ import {
   groupIntoWorkouts, workoutMetrics, findPreviousComparable,
   matchedSeriesDeltaPct, exercisesInWorkout, formatDuration, relativeDate,
 } from '@/components/history/historyHelpers';
+import { AddSetsSheet } from '@/components/AddSetsSheet';
 
 function typeBadge(t?: string) {
   if (t === 'myo-rep') return { label: 'MYO', cls: 'bg-orange-500/20 text-orange-400' };
@@ -20,6 +21,7 @@ export default function SessionDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { history, programs } = useWorkout();
+  const [addOpen, setAddOpen] = useState(false);
 
   const workouts = useMemo(() => groupIntoWorkouts(history), [history]);
   const workout = useMemo(() => workouts.find(w => w.id === decodeURIComponent(id || '')), [workouts, id]);
@@ -74,6 +76,9 @@ export default function SessionDetail() {
                 {format(parseISO(workout.startedAt), "EEEE d MMM 'à' HH:mm", { locale: fr })} · {relativeDate(workout.startedAt)}
               </p>
             </div>
+            <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0" onClick={() => setAddOpen(true)} title="Ajouter des séries manuellement">
+              <Plus className="h-5 w-5" />
+            </Button>
           </div>
         </div>
       </header>
@@ -235,6 +240,8 @@ export default function SessionDetail() {
           })}
         </div>
       </main>
+
+      <AddSetsSheet open={addOpen} onClose={() => setAddOpen(false)} program={program} session={session} workout={workout} />
     </div>
   );
 }
