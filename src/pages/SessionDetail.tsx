@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, TrendingUp, TrendingDown, Minus, Plus } from 'lucide-react';
+import { ArrowLeft, TrendingUp, TrendingDown, Minus, Plus, Pencil } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { format, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -10,6 +10,7 @@ import {
   matchedSeriesDeltaPct, exercisesInWorkout, formatDuration, relativeDate,
 } from '@/components/history/historyHelpers';
 import { AddSetsSheet } from '@/components/AddSetsSheet';
+import { EditExerciseSheet } from '@/components/EditExerciseSheet';
 
 function typeBadge(t?: string) {
   if (t === 'myo-rep') return { label: 'MYO', cls: 'bg-orange-500/20 text-orange-400' };
@@ -22,6 +23,7 @@ export default function SessionDetail() {
   const navigate = useNavigate();
   const { history, programs } = useWorkout();
   const [addOpen, setAddOpen] = useState(false);
+  const [editEx, setEditEx] = useState<ReturnType<typeof exercisesInWorkout>[number] | null>(null);
 
   const workouts = useMemo(() => groupIntoWorkouts(history), [history]);
   const workout = useMemo(() => workouts.find(w => w.id === decodeURIComponent(id || '')), [workouts, id]);
@@ -157,6 +159,9 @@ export default function SessionDetail() {
                       {exDelta > 0 ? '+' : ''}{exDelta}%
                     </span>
                   )}
+                  <button type="button" onClick={() => setEditEx(ex)} className="shrink-0 text-muted-foreground/50 hover:text-foreground" title="Modifier / supprimer des séries">
+                    <Pencil className="h-3.5 w-3.5" />
+                  </button>
                 </div>
 
                 {/* Table compacte: 1 col par série + col N-1 si dispo */}
@@ -242,6 +247,7 @@ export default function SessionDetail() {
       </main>
 
       <AddSetsSheet open={addOpen} onClose={() => setAddOpen(false)} program={program} session={session} workout={workout} />
+      <EditExerciseSheet ex={editEx} onClose={() => setEditEx(null)} workout={workout} />
     </div>
   );
 }

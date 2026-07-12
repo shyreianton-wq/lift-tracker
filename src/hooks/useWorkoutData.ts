@@ -511,6 +511,21 @@ export function useWorkoutData() {
     if (!entries.length) return;
     setHistory(h => unionById(h, entries));
   }, []);
+  const updateHistoryEntry = useCallback((id: string, patch: Partial<WorkoutHistory>) => {
+    setHistory(h => h.map(x => x.id === id ? { ...x, ...patch } : x));
+  }, []);
+  const deleteHistoryEntry = useCallback((id: string) => {
+    setHistory(h => h.filter(x => x.id !== id));
+    // retirer aussi du tampon local (sinon la série pourrait ressortir via Rattraper)
+    try {
+      const p = readPending();
+      if (p) {
+        const remaining = p.history.filter(e => e.id !== id);
+        if (remaining.length === 0) localStorage.removeItem(PENDING_KEY);
+        else localStorage.setItem(PENDING_KEY, JSON.stringify({ history: remaining, activeWorkout: p.activeWorkout }));
+      }
+    } catch { /* ignore */ }
+  }, []);
 
   return {
     programs,
@@ -522,6 +537,8 @@ export function useWorkoutData() {
     pushLocalEntries,
     clearLocalBackup,
     addHistoryEntries,
+    updateHistoryEntry,
+    deleteHistoryEntry,
     addProgram,
     updateProgram,
     deleteProgram,

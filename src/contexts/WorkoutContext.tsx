@@ -12,6 +12,8 @@ interface WorkoutContextType {
   pushLocalEntries: (entries: WorkoutHistory[]) => void;
   clearLocalBackup: () => void;
   addHistoryEntries: (entries: WorkoutHistory[]) => void;
+  updateHistoryEntry: (id: string, patch: Partial<WorkoutHistory>) => void;
+  deleteHistoryEntry: (id: string) => void;
   addProgram: (program: Program) => void;
   updateProgram: (program: Program) => void;
   deleteProgram: (programId: string) => void;
