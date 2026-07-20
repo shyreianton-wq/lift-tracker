@@ -1,6 +1,6 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
-import { Play, Pause, Check, RotateCcw } from 'lucide-react';
+import { Play, Pause, Check, RotateCcw, Minus, Plus } from 'lucide-react';
 
 interface StopwatchProps {
   onComplete: (durationSeconds: number) => void;
@@ -40,6 +40,15 @@ export function Stopwatch({ onComplete, targetDuration }: StopwatchProps) {
     }
   }, []);
 
+  // Ajuste la durée du chrono (± secondes) — reste cohérent si le chrono tourne.
+  const adjust = useCallback((deltaSec: number) => {
+    setElapsedMs(prev => {
+      const next = Math.max(0, prev + deltaSec * 1000);
+      startTimeRef.current = Date.now() - next;
+      return next;
+    });
+  }, []);
+
   const validate = useCallback(() => {
     pause();
     const seconds = Math.round(elapsedMs / 1000);
@@ -65,8 +74,16 @@ export function Stopwatch({ onComplete, targetDuration }: StopwatchProps) {
           Objectif: {Math.floor(targetDuration / 60)}:{(targetDuration % 60).toString().padStart(2, '0')}
         </div>
       )}
-      <div className={`text-4xl font-mono font-bold ${isOverTarget ? 'text-green-500' : ''}`}>
-        {formatTime(elapsedMs)}
+      <div className="flex items-center justify-center gap-3">
+        <Button onClick={() => adjust(-5)} variant="outline" size="icon" className="h-10 w-10 shrink-0" aria-label="-5 s">
+          <Minus className="h-4 w-4" />
+        </Button>
+        <div className={`text-4xl font-mono font-bold tabular-nums min-w-[6.5ch] text-center ${isOverTarget ? 'text-green-500' : ''}`}>
+          {formatTime(elapsedMs)}
+        </div>
+        <Button onClick={() => adjust(5)} variant="outline" size="icon" className="h-10 w-10 shrink-0" aria-label="+5 s">
+          <Plus className="h-4 w-4" />
+        </Button>
       </div>
       <div className="flex gap-2">
         {!isRunning ? (
