@@ -75,13 +75,13 @@ export function Stopwatch({ onComplete, targetDuration }: StopwatchProps) {
         </div>
       )}
       <div className="flex items-center justify-center gap-3">
-        <Button onClick={() => adjust(-5)} variant="outline" size="icon" className="h-10 w-10 shrink-0" aria-label="-5 s">
+        <Button onClick={() => adjust(-1)} variant="outline" size="icon" className="h-10 w-10 shrink-0" aria-label="-1 s">
           <Minus className="h-4 w-4" />
         </Button>
         <div className={`text-4xl font-mono font-bold tabular-nums min-w-[6.5ch] text-center ${isOverTarget ? 'text-green-500' : ''}`}>
           {formatTime(elapsedMs)}
         </div>
-        <Button onClick={() => adjust(5)} variant="outline" size="icon" className="h-10 w-10 shrink-0" aria-label="+5 s">
+        <Button onClick={() => adjust(1)} variant="outline" size="icon" className="h-10 w-10 shrink-0" aria-label="+1 s">
           <Plus className="h-4 w-4" />
         </Button>
       </div>
