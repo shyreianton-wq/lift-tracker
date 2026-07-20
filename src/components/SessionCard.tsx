@@ -7,13 +7,14 @@ import { Badge } from '@/components/ui/badge';
 interface SessionCardProps {
   session: Session;
   index: number;
+  highlight?: boolean;
   onStart?: () => void;
   onEdit?: () => void;
   onDelete?: () => void;
   onClick?: () => void;
 }
 
-export function SessionCard({ session, index, onStart, onEdit, onDelete, onClick }: SessionCardProps) {
+export function SessionCard({ session, index, highlight, onStart, onEdit, onDelete, onClick }: SessionCardProps) {
   const totalSets = session.exercises.reduce(
     (acc, ex) => acc + ex.sets.length,
     0
@@ -47,7 +48,7 @@ export function SessionCard({ session, index, onStart, onEdit, onDelete, onClick
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: index * 0.1 }}
-      className="group bg-secondary/50 hover:bg-secondary/80 rounded-xl p-4 transition-all border border-transparent hover:border-border cursor-pointer"
+      className={`group bg-secondary/50 hover:bg-secondary/80 rounded-xl p-4 transition-all border cursor-pointer ${highlight ? 'session-todo' : 'border-transparent hover:border-border'}`}
       onClick={onClick}
     >
       <div className="flex items-center justify-between">
@@ -59,6 +60,9 @@ export function SessionCard({ session, index, onStart, onEdit, onDelete, onClick
             <div className="flex items-center gap-2">
               <h4 className="font-semibold text-foreground">{session.name}</h4>
               {getSessionTypeBadge()}
+              {highlight && (
+                <Badge variant="secondary" className="text-[10px] px-1.5 bg-primary/20 text-primary">À faire</Badge>
+              )}
             </div>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Dumbbell className="h-3 w-3" />

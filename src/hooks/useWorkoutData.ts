@@ -235,6 +235,17 @@ export function useWorkoutData() {
     }
   }, []);
 
+  // Retry : resauvegarde l'état COURANT sans recharger la page (donc sans perdre
+  // l'avancement). Auto toutes les 20 s tant qu'on est en erreur + bouton manuel.
+  const latestRef = useRef({ programs, history, activeWorkout });
+  latestRef.current = { programs, history, activeWorkout };
+  const retrySave = useCallback(() => { saveToServer(latestRef.current); }, [saveToServer]);
+  useEffect(() => {
+    if (saveState !== 'error') return;
+    const t = setInterval(() => saveToServer(latestRef.current), 20000);
+    return () => clearInterval(t);
+  }, [saveState, saveToServer]);
+
   useEffect(() => {
     if (!isLoaded) return;
     if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
@@ -533,6 +544,7 @@ export function useWorkoutData() {
     activeWorkout,
     isLoaded,
     saveState,
+    retrySave,
     getLocalBackup,
     pushLocalEntries,
     clearLocalBackup,

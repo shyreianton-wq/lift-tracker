@@ -8,6 +8,7 @@ interface WorkoutContextType {
   activeWorkout: ActiveWorkout | null;
   isLoaded: boolean;
   saveState: 'idle' | 'saving' | 'saved' | 'error';
+  retrySave: () => void;
   getLocalBackup: () => WorkoutHistory[];
   pushLocalEntries: (entries: WorkoutHistory[]) => void;
   clearLocalBackup: () => void;

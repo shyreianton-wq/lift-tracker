@@ -4,18 +4,35 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Edit, Plus, Play } from 'lucide-react';
 import { SessionCard } from '@/components/SessionCard';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { CreateProgramModal } from '@/components/CreateProgramModal';
 import { RotationGroupsPanel } from '@/components/RotationGroupsPanel';
 
 export default function ProgramDetail() {
   const { programId } = useParams();
   const navigate = useNavigate();
-  const { programs, updateProgram, startWorkout, activeWorkout } = useWorkout();
+  const { programs, updateProgram, startWorkout, activeWorkout, history } = useWorkout();
   const [showEditModal, setShowEditModal] = useState(false);
   const [editSessionId, setEditSessionId] = useState<string | undefined>();
 
   const program = programs.find(p => p.id === programId);
+
+  // Séance "à faire" = la moins récemment effectuée (jamais faite = prioritaire).
+  const nextSessionId = useMemo(() => {
+    if (!program) return null;
+    const lastDone = new Map<string, number>();
+    for (const h of history) {
+      if (h.programId !== program.id) continue;
+      const t = new Date(h.completedAt).getTime();
+      if (t > (lastDone.get(h.sessionId) ?? -Infinity)) lastDone.set(h.sessionId, t);
+    }
+    let best: string | null = null; let bestT = Infinity;
+    for (const s of program.sessions) {
+      const t = lastDone.has(s.id) ? (lastDone.get(s.id) as number) : -1;
+      if (t < bestT) { bestT = t; best = s.id; }
+    }
+    return best;
+  }, [program, history]);
 
   if (!program) {
     return (
@@ -103,6 +120,7 @@ export default function ProgramDetail() {
                 key={session.id}
                 session={session}
                 index={index}
+                highlight={session.id === nextSessionId}
                 onStart={() => handleStartSession(session.id)}
                 onEdit={() => { setEditSessionId(session.id); setShowEditModal(true); }}
               />
