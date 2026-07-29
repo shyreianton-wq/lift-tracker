@@ -314,13 +314,13 @@ export function SetInput({ set, index, exerciseMode = 'reps', lastPerformance, p
           <div className="flex flex-col items-center gap-2">
             <div className="flex items-center justify-center gap-3">
               {!set.isCompleted && (
-                <Button type="button" variant="outline" size="icon" className="h-11 w-11 shrink-0" onClick={() => adjustShownDuration(-1)} aria-label="-1 s"><Minus className="h-4 w-4" /></Button>
+                <Button type="button" variant="ghost" size="icon" className="h-9 w-9 shrink-0 rounded-full text-muted-foreground/70 hover:text-foreground hover:bg-secondary" onClick={() => adjustShownDuration(-1)} aria-label="-1 s"><Minus className="h-4 w-4" /></Button>
               )}
               <div className="text-3xl font-bold tabular-nums text-foreground min-w-[5ch] text-center">
                 {formatDur(shownDuration)}
               </div>
               {!set.isCompleted && (
-                <Button type="button" variant="outline" size="icon" className="h-11 w-11 shrink-0" onClick={() => adjustShownDuration(1)} aria-label="+1 s"><Plus className="h-4 w-4" /></Button>
+                <Button type="button" variant="ghost" size="icon" className="h-9 w-9 shrink-0 rounded-full text-muted-foreground/70 hover:text-foreground hover:bg-secondary" onClick={() => adjustShownDuration(1)} aria-label="+1 s"><Plus className="h-4 w-4" /></Button>
               )}
             </div>
             <div className="flex items-center gap-2">
