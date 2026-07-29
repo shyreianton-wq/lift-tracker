@@ -115,6 +115,11 @@ export function SetInput({ set, index, exerciseMode = 'reps', lastPerformance, p
 
   const handleDurationChange = (value: string) => { const n = parseInt(value) || 0; setDurationDraft(n); onUpdate({ ...set, completedDuration: n }); };
   const adjustDuration = (delta: number) => { const n = Math.max(0, currentDuration + delta); setDurationDraft(n); onUpdate({ ...set, completedDuration: n }); };
+  const shownDuration = stopwatchRunning || stopwatchTime > 0 ? stopwatchTime : (set.isCompleted ? (set.completedDuration || 0) : currentDuration);
+  const adjustShownDuration = (d: number) => {
+    if (stopwatchTime > 0) { const t = Math.max(0, stopwatchTime + d); setStopwatchTime(t); onUpdate({ ...set, completedDuration: t }); }
+    else adjustDuration(d);
+  };
   const formatDur = (s: number) => `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, '0')}`;
 
   const handleWeightChange = (value: string) => {
@@ -307,8 +312,16 @@ export function SetInput({ set, index, exerciseMode = 'reps', lastPerformance, p
             </div>
           )}
           <div className="flex flex-col items-center gap-2">
-            <div className="text-3xl font-bold tabular-nums text-foreground">
-              {formatDur(stopwatchRunning || stopwatchTime > 0 ? stopwatchTime : (set.isCompleted ? set.completedDuration || 0 : currentDuration))}
+            <div className="flex items-center justify-center gap-3">
+              {!set.isCompleted && (
+                <Button type="button" variant="outline" size="icon" className="h-11 w-11 shrink-0" onClick={() => adjustShownDuration(-1)} aria-label="-1 s"><Minus className="h-4 w-4" /></Button>
+              )}
+              <div className="text-3xl font-bold tabular-nums text-foreground min-w-[5ch] text-center">
+                {formatDur(shownDuration)}
+              </div>
+              {!set.isCompleted && (
+                <Button type="button" variant="outline" size="icon" className="h-11 w-11 shrink-0" onClick={() => adjustShownDuration(1)} aria-label="+1 s"><Plus className="h-4 w-4" /></Button>
+              )}
             </div>
             <div className="flex items-center gap-2">
               {!set.isCompleted && (
@@ -327,12 +340,6 @@ export function SetInput({ set, index, exerciseMode = 'reps', lastPerformance, p
                 </>
               )}
             </div>
-            {stopwatchTime > 0 && !stopwatchRunning && !set.isCompleted && (
-              <div className="flex items-center justify-center gap-2 mt-2">
-                <Button type="button" variant="outline" size="sm" className="h-9 px-3 text-xs" onClick={() => { const t = Math.max(0, stopwatchTime - 1); setStopwatchTime(t); onUpdate({ ...set, completedDuration: t }); }}>-1s</Button>
-                <Button type="button" variant="outline" size="sm" className="h-9 px-3 text-xs" onClick={() => { const t = stopwatchTime + 1; setStopwatchTime(t); onUpdate({ ...set, completedDuration: t }); }}>+1s</Button>
-              </div>
-            )}
           </div>
           {!showWeightForTime && !set.isCompleted && (
             <button type="button" onClick={() => setShowWeightForTime(true)} className="text-xs text-muted-foreground hover:text-foreground transition-colors w-full text-center py-1">+ Ajouter du lest (poids)</button>
